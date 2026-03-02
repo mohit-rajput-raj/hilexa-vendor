@@ -1,15 +1,16 @@
-import { data } from "@/app/(dashboard)/reservation/_components/data"
+// import { data } from "@/app/(dashboard)/reservation/_components/data"
 import { axiosApi } from "@/lib/axios";
 
-export const getReservation = () => {
+export const getReservation = async() => {
     try {
-        console.log("called");
+        const res = await axiosApi.get("/vendors/bookings")
         
-        return data
+        return res.data
     } catch (error) {
         return []
     }
 }
+// export const getRoom
 export const getRooms = async()=>{
     try {
         const res = await axiosApi.get("/vendors/room-types", {

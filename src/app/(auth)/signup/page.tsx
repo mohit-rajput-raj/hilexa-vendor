@@ -1,13 +1,4 @@
 
-export default function SignupPage() {
-  return (
-    <div className="bg-background flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
-      <div className="w-full max-w-sm">
-        <SignupForm />
-      </div>
-    </div>
-  )
-}
 import { GalleryVerticalEnd } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -20,6 +11,24 @@ import {
   FieldSeparator,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { MessageModal } from "@/app/(dashboard)/rooms/_components/full-frame"
+import { ErrorBoundary } from "react-error-boundary"
+import { Suspense } from "react"
+import { PageSkeleton } from "@/app/(dashboard)/rooms/_components/details.skeleton"
+export default function SignupPage() {
+  return (
+    <ErrorBoundary fallback={<MessageModal title="Error" description="Something went wrong" />}>
+                  <Suspense fallback={<PageSkeleton />}>
+    <div className="bg-background flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
+      <div className="w-full max-w-sm">
+        <SignupForm />
+      </div>
+    </div>
+    </Suspense>
+    </ErrorBoundary>
+  )
+}
+
 
 function SignupForm({
   className,

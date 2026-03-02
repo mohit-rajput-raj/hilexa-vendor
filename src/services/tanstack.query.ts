@@ -6,7 +6,7 @@ export const useResevatiosnData = () => {
     return useQuery({
         queryKey: ["user-reservations"],
         queryFn: () => getReservation(),
-        staleTime: 20000,
+        staleTime: 10000,
         refetchOnWindowFocus: false,
         refetchOnMount: true,
         refetchOnReconnect: true,

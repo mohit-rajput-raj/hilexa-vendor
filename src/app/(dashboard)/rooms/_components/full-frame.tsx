@@ -1,4 +1,4 @@
-"use client";
+'use client'
 
 import * as React from "react";
 import { Badge } from "@/components/ui/badge";
@@ -96,27 +96,15 @@ export function RoomListing() {
     id: "",
     mode: false,
   });
+  
   const router = useRouter();
   const { data, isLoading } = useAllRooms();
   const [loading, setLoading] = React.useState(false);
-  React.useEffect(() => {
-    setTimeout(() => {
-      setLoading(true);
-    }, 1000);
-    setLoading(false);
-  }, [roomselected]);
-  if (!data) {
-    return <div>no rooms found</div>;
-  }
+
 
   const rosms = (data?.data as Room[]) || ([] as Room[]);
-  if (editmode.mode && editmode.id) {
-    return <AddRoomForm setEditMode={setEditMode} />;
-  }
-
-
-
-  const filteredAndSortedRooms = React.useMemo(() => {
+  
+   const filteredAndSortedRooms = React.useMemo(() => {
     let rooms = [...rosms];
     if (typeFilter !== "all") {
       rooms = rooms.filter((room) =>
@@ -131,6 +119,20 @@ export function RoomListing() {
     }
     return rooms;
   }, [rosms, sortBy, typeFilter]);
+
+
+  React.useEffect(() => {
+    setTimeout(() => {
+      setLoading(true);
+    }, 1000);
+    setLoading(false);
+  }, [roomselected]);
+  if (!data) {
+    return <div><PageSkeleton/></div>;
+  }
+ if (editmode.mode && editmode.id) {
+    return <EditRoomForm setEditMode={setEditMode} hotelId={"sdf"} roomId={editmode.id} />;
+  }
   return (
     <div className="flex min-h-screen flex-col gap-6 ">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -271,7 +273,7 @@ export function RoomListing() {
               />
             )
           ) : (
-            <SelectHotel />
+            <MessageModal title="Select Hotel" description="Please select a hotel" />
           )}
         </div>
       </div>
@@ -280,20 +282,21 @@ export function RoomListing() {
 }
 
 import { Building2 } from "lucide-react";
+import EditRoomForm from "./edit-room-form";
 
-export const SelectHotel = () => {
+export const MessageModal = ({title,description}: {title: string, description: string}) => {
   return (
-    <div className="flex items-center justify-center min-h-[300px] p-6">
-      <Card className="w-full max-w-md shadow-lg rounded-2xl border-dashed border-2">
+    <div className="flex items-center justify-center min-full ">
+      <Card className="w-full  shadow-lg rounded-2xl border-dashed border-2">
         <CardContent className="flex flex-col items-center justify-center py-12 text-center space-y-4">
           <Building2 className="w-12 h-12 text-muted-foreground" />
 
           <h2 className="text-2xl font-semibold tracking-tight">
-            Select a Hotel
+            {title}
           </h2>
 
           <p className="text-sm text-muted-foreground">
-            Please choose a hotel from the list to continue.
+            {description}
           </p>
         </CardContent>
       </Card>

@@ -1,11 +1,18 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import ChatDashboard from './_components/messages'
+import { ErrorBoundary } from 'react-error-boundary'
+import { MessageModal } from '../rooms/_components/full-frame'
+import { PageSkeleton } from '../rooms/_components/details.skeleton'
 
 type Props = {}
 
 const page = (props: Props) => {
     return (
+         <ErrorBoundary fallback={<MessageModal title="Error" description="Something went wrong" />}>
+              <Suspense fallback={<PageSkeleton />}>
         <div><ChatDashboard/></div>
+              </Suspense>
+         </ErrorBoundary>
     )
 }
 

@@ -17,21 +17,29 @@ import LOGO from "@/components/logo/logo"
 import { useCurrentUser } from "@/services/queryes"
 import { useRouter } from "next/navigation"
 import { useEffect } from "react"
+import { ErrorBoundary } from "react-error-boundary"
+import { Suspense } from "react"
+import { MessageModal } from "@/app/(dashboard)/rooms/_components/full-frame"
+import { PageSkeleton } from "@/app/(dashboard)/rooms/_components/details.skeleton"
 export default function LoginPage() {
   const router = useRouter()
   const {data}= useCurrentUser()
   useEffect(()=>{
-    if(data?.data?.role === "vendor"){
+    if(data?.data?.role === "vendor" && localStorage.getItem("accessToken") !== null){
       router.push("/dashboard")
     }
   },[data])
  
   return (
+    <ErrorBoundary fallback={<MessageModal title="Error" description="Something went wrong" />}>
+                  <Suspense fallback={<PageSkeleton />}>
     <div className="bg-background flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
       <div className="w-full max-w-sm">
         <LoginForm />
       </div>
     </div>
+    </Suspense>
+    </ErrorBoundary>
   )
 }
 

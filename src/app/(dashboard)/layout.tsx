@@ -25,7 +25,7 @@ export default function Page(
                 } as React.CSSProperties
             }
         >
-            <AppSidebar variant="sidebar" className="bg-foreground/10" />
+            <AppSidebar variant="inset" className="bg-foreground/10 p-0"/>
             <SidebarInset className="bg-gray-50 dark:bg-zinc-900">
                 <ErrorBoundary fallback={<div>Something went wrong</div>}>
                 <SiteHeader />
@@ -34,8 +34,9 @@ export default function Page(
                     <div className="@container/main flex flex-1 flex-col gap-2">
                         <div className="flex flex-col gap-4 p-2 md:gap-6 md:p-2  rounded-xl min-h-screen">
                             {children}
-                            <CompactFooter/>
+                            
                         </div>
+                        <CompactFooter/>
                     </div>
                 </div>
             </SidebarInset>

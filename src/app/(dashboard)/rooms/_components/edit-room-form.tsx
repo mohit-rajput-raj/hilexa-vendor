@@ -31,17 +31,19 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useAuthStore } from "@/stores/auth.store";
 import { toast } from "sonner";
 
-import { NewRoomProps, NewRoomSchema } from "./zod-schema";
 import { amenityIconMap } from "@/components/icons";
+import { NewRoomProps, NewRoomSchema } from "../new/zod-schema";
 
 export default function AddRoomForm({
   setEditMode,
   hotelId,
+  roomId,
 }: {
   setEditMode?: React.Dispatch<
     React.SetStateAction<{ id: string; mode: boolean }>
   >;
   hotelId: string;
+  roomId: string;
 }) {
   const { uploadFile } = useAuthStore();
   const [loading, setLoading] = useState(false);

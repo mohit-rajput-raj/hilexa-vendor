@@ -252,7 +252,7 @@ th {
   background-color: #f9fafb;
 }
 
-td {
+.data-table td {
   padding: 12px 16px !important;
 }
 
