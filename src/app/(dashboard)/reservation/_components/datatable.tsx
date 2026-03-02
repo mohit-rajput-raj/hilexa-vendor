@@ -41,31 +41,35 @@ import { useRouter } from "next/navigation";
   // import { useReservationsData } from "@/services/tanstack.query";
   // import { useUpdateReservationStatus } from "@/services/reservationMutations";
 
-export type Status = "Confirmed" | "Pending";
+export type Status = "confirmed" | "pending" | "Confirmed" | "Pending" | null;
 export type Reservation = {
-  id: string;
+  bookingReference: string;
   guestName: string;
-  roomType: string;
+  roomLabel: string;
   roomNumber: string;
-  request: string;
-  duration: number;
+  specialRequest: string;
+  nights: number;
   checkIn: string;
   checkOut: string;
   status: Status;
 };
 
 // Memoized cells to reduce unnecessary renders
-const StatusBadge = React.memo(({ status }: { status: Status }) => (
-  <span
-    className={`inline-flex px-3 py-1 rounded-md text-xs font-medium ${
-      status === "Confirmed"
-        ? "bg-[#E6F6F0] text-[#1DB47D]"
-        : "bg-[#FEECEC] text-[#EB5757]"
-    }`}
-  >
-    {status}
-  </span>
-));
+const StatusBadge = React.memo(({ status }: { status: Status }) => {
+  const isConfirmed = (status || "").toLowerCase() === "confirmed";
+
+  return (
+    <span
+      className={`inline-flex px-3 py-1 rounded-md text-xs font-medium ${
+        isConfirmed
+          ? "bg-[#E6F6F0] text-[#1DB47D]"
+          : "bg-[#FEECEC] text-[#EB5757]"
+      }`}
+    >
+      {(status || "—").charAt(0).toUpperCase() + (status || "").slice(1)}
+    </span>
+  );
+});
 
 const ActionCell = React.memo(({ row }: { row: any }) => {
   const status = row.original.status;
@@ -86,14 +90,14 @@ const ActionCell = React.memo(({ row }: { row: any }) => {
         disabled={isUpdating}
         onClick={() =>
           updateStatus({
-            id: row.original.id,
+            id: row.original.bookingReference,
             newStatus: status === "Pending" ? "Confirmed" : "Pending",
           })
         }
         className={cn(
           "h-8 min-w-[90px] px-4 text-xs font-medium transition-colors",
-          status === "Pending"
-            ? "border-violet-200 bg-violet-50 text-violet-700 hover:bg-violet-100 hover:text-violet-800"
+          status !== "Pending"
+            ? "border-green-200 bg-green-50 text-green-700 hover:bg-green-100 hover:text-green-800"
             : "border-red-200 bg-red-50 text-red-700 hover:bg-red-100 hover:text-red-800",
           isUpdating && "opacity-70 cursor-wait"
         )}
@@ -117,12 +121,12 @@ export const columns: ColumnDef<Reservation>[] = [
       return (
          <div className="flex flex-col py-1">
         <span className="font-medium text-slate-900">
-          <a className="cursor-pointer" onClick={()=>router.push(`/reservation/user/${row.original.id}`)}>
+          <a className="cursor-pointer" onClick={()=>router.push(`/reservation/user/${row.original.bookingReference}`)}>
             {row.original.guestName}
           </a>
         </span>
         <span className="text-[11px] text-slate-400 font-mono uppercase tracking-wider">
-          {row.original.id}
+          {row.original.bookingReference}
         </span>
       </div>
       )
@@ -132,26 +136,36 @@ export const columns: ColumnDef<Reservation>[] = [
     header: "Room",
     cell: ({ row }) => (
       <span className="text-slate-600">
-        {row.original.roomType} {row.original.roomNumber}
+        {row.original.roomLabel} {row.original.roomNumber || "23"}
       </span>
     ),
   },
   {
-    accessorKey: "request",
     header: "Request",
+    cell: ({ row }) => (
+      <span className="text-slate-600 line-clamp-1 max-w-[180px]">
+        {row.original.specialRequest || "NA"}
+      </span>
+    ),
   },
-  {
-    accessorKey: "duration",
+ {
     header: "Duration",
-    cell: ({ row }) => `${row.original.duration} nights`,
+    cell: ({ row }) => {
+      const nights = row.original.nights ?? 0;
+      return `${nights} night${nights !== 1 ? "s" : ""}`;
+    },
   },
   {
     header: "Check-In – Check-Out",
-    cell: ({ row }) => (
-      <span className="text-slate-600 whitespace-nowrap">
-        {row.original.checkIn} – {row.original.checkOut}
-      </span>
-    ),
+    cell: ({ row }) => {
+      const inDate = row.original.checkIn ? new Date(row.original.checkIn).toLocaleDateString() : "—";
+      const outDate = row.original.checkOut ? new Date(row.original.checkOut).toLocaleDateString() : "—";
+      return (
+        <span className="text-slate-600 whitespace-nowrap">
+          {inDate} – {outDate}
+        </span>
+      );
+    },
   },
   {
     accessorKey: "status",
@@ -170,8 +184,29 @@ export function GuestDataTable() {
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
 
-  const { data: reservations = [] } = useResevatiosnData();
-
+  const { data: queryResult = [] } = useResevatiosnData();
+  const reservations = queryResult?.data ?? [];
+  console.log(reservations)
+// [{
+//             "bookingReference": "BK-F1EBA5D09A5F",
+//             "guestName": "Mohit Rajput",
+//             "roomLabel": "Luxury Palace Room ",
+//             "specialRequest": null,
+//             "nights": 2,
+//             "checkIn": "2026-03-09T00:00:00.000Z",
+//             "checkOut": "2026-03-11T00:00:00.000Z",
+//             "status": "confirmed"
+//         },
+//         {
+//             "bookingReference": "BK-0C18D3DCA4A7",
+//             "guestName": "Mohit Rajput",
+//             "roomLabel": "Deluxe City View ",
+//             "specialRequest": null,
+//             "nights": 1,
+//             "checkIn": "2026-03-31T00:00:00.000Z",
+//             "checkOut": "2026-04-01T00:00:00.000Z",
+//             "status": "confirmed"
+//         }]
   const table = useReactTable({
     data: reservations,
     columns,
@@ -223,7 +258,7 @@ export function GuestDataTable() {
 
       <div className="rounded-md ">
         <Table>
-          <TableHeader>
+          <TableHeader >
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
@@ -249,7 +284,7 @@ export function GuestDataTable() {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
+                <TableCell colSpan={columns.length} className="h-24 text-center ">
                   No reservations found.
                 </TableCell>
               </TableRow>

@@ -20,7 +20,7 @@ export const useUpdateReservationStatus = () => {
       const previousReservations = queryClient.getQueryData<Reservation[]>(['user-reservations']);
 
       queryClient.setQueryData<Reservation[]>(['user-reservations'], (old = []) => {
-        const item = old.find(r => r.id === id);
+        const item = old.find(r => r.bookingReference === id);
         if (item) {
           // In-place mutation → same array reference, only one object changes
           item.status = newStatus;

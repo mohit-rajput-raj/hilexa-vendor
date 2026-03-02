@@ -145,7 +145,7 @@ import Image from "next/image"
 
 export function RoomInfoCard() {
   return (
-    <Card className="rounded-2xl overflow-hidden">
+    <Card className="rounded-2xl overflow-hidden shadow-none bg-background border border-border ">
       <CardHeader>
         <CardTitle>Room Info</CardTitle>
       </CardHeader>

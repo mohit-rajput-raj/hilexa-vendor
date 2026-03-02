@@ -15,7 +15,7 @@ export const SmallCalendar: React.FC = () => {
       mode="single"
       selected={date}
       onSelect={setDate}
-      className="rounded-lg border-none shadow-none bg-transparent"
+      className="rounded-lg border-none shadow-none bg-transparent "
       captionLayout="dropdown"
     />
   )

@@ -1,19 +1,25 @@
 import { z } from "zod";
 
 export const NewRoomSchema = z.object({
-  roomNumber: z.string().min(1, "First name is required").optional(),
-  roomFloor: z.string().min(1, "Last name is required").optional(),
-  roomType: z.string().min(1, "Last name is required").optional(),
-  roomCapacity: z.string().min(1, "Last name is required").optional(),
-  roomPricePerNight: z.string().min(1, "Last name is required").optional(),
-  roomDescription: z.string().min(1, "Last name is required").optional(),
-  bedType: z.string().min(1, "Last name is required").optional(),
-  roomSize: z.string().min(1, "Last name is required").optional(),
-  amenities: z.array(z.string()).optional(),
-  view: z.array(z.string()).optional(),
-  accessibilityFeatures: z.array(z.string()).optional(),
-  images: z.array(z.string()).optional(),
-  reservationStatus: z.string().optional(),
+  hotelId: z.string().min(1, "Hotel is required"),//
+  name: z.string().min(1, "Name is required"),
+  description: z.string().min(1, "Description is required"),
+  basePrice: z.number().min(1, "Base price is required"),
+  discountPrice: z.number().min(1, "Discount price is required"),
+  capacity: z.array(z.object({
+    adults: z.number().min(1, "Adults is required"),
+    children: z.number(),
+  })).min(1, "Capacity is required"),
+  beds: z.array(z.object({
+    type: z.string(),
+    quantity: z.number().min(1, "Quantity is required"),
+  })).min(1, "Beds are required"),
+  amenities: z.array(z.string()).min(1, "Amenities are required"),
+  roomSizeSqm: z.number().min(1, "Room size is required"),
+  viewType:z.string(),
+  images: z.array(z.string()),
+  totalRooms: z.number().min(1, "Total rooms is required"),
+  isActive: z.boolean(),
 });
 
 export type NewRoomProps = z.infer<typeof NewRoomSchema>;
