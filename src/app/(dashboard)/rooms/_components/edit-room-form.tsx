@@ -93,13 +93,17 @@ export default function AddRoomForm({
     setPreviews((prev) => [...prev, ...newPreviews]);
 
     // 2. Upload files
-    const newUrls: string[] = [];
+    const newUrls: { url: string; public_id: string; resource_type: string }[] = [];
 
     for (const file of files) {
       try {
         const result = await uploadFile(file);
         if (result?.url) {
-          newUrls.push(result.url);
+          newUrls.push({
+            url: result.url,
+            public_id: result?.public_id as string || "",
+            resource_type: result?.resource_type as string || "",
+          });
           toast.success(`Uploaded: ${file.name}`);
         } else {
           throw new Error("No URL returned");
@@ -140,9 +144,7 @@ export default function AddRoomForm({
   const onSubmit = async (data: NewRoomProps) => {
     setLoading(true);
     try {
-      console.log("Submitting:", data);
 
-      // await fetch("/api/rooms", { method: "POST", body: JSON.stringify(data), headers: { "Content-Type": "application/json" } });
 
       toast.success("Room created successfully!");
       form.reset();
@@ -182,10 +184,10 @@ export default function AddRoomForm({
                     <div className="flex flex-wrap gap-4">
                       {/* Previews – using uploaded URLs when available */}
                       {form.watch("images").map((url, idx) => (
-                        <div key={url} className="relative group">
+                        <div key={url.url} className="relative group">
                           <div className="h-28 w-40 rounded-xl overflow-hidden border shadow-sm">
                             <Image
-                              src={url}
+                              src={url.url}
                               alt={`Room image ${idx + 1}`}
                               width={160}
                               height={112}
@@ -205,9 +207,8 @@ export default function AddRoomForm({
 
                       {/* Upload button with spinner */}
                       <label
-                        className={`h-28 w-40 rounded-xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer hover:bg-muted/50 transition-all ${
-                          uploading ? "opacity-60 cursor-not-allowed" : ""
-                        }`}
+                        className={`h-28 w-40 rounded-xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer hover:bg-muted/50 transition-all ${uploading ? "opacity-60 cursor-not-allowed" : ""
+                          }`}
                       >
                         <Input
                           type="file"
@@ -364,7 +365,7 @@ export default function AddRoomForm({
                   />
                 </AccordionContent>
               </AccordionItem>
-{/* //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */}
+              {/* //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */}
               {/* ── Capacity & Beds ────────────────────────────── */}
               <AccordionItem value="capacity">
                 <AccordionTrigger>Capacity & Beds</AccordionTrigger>
@@ -522,7 +523,7 @@ export default function AddRoomForm({
               <Button
                 type="submit"
                 size="lg"
-                disabled={loading || uploading 
+                disabled={loading || uploading
 
                 }
                 className="flex-1"

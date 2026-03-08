@@ -11,6 +11,7 @@ import {
 
 import data from "./data.json"
 import { CompactFooter } from "@/components/footer/compactfooter"
+import { Suspense } from "react"
 // import { Footer } from "@/components/footer/footer"
 
 export default function Page(
@@ -25,7 +26,7 @@ export default function Page(
                 } as React.CSSProperties
             }
         >
-            <AppSidebar variant="inset" className="bg-foreground/10 p-0"/>
+                <AppSidebar variant="inset" className="bg-foreground/10 p-0"/>
             <SidebarInset className="bg-gray-50 dark:bg-zinc-900">
                 <ErrorBoundary fallback={<div>Something went wrong</div>}>
                 <SiteHeader />

@@ -1,7 +1,29 @@
 'use client'
 import { useQuery } from "@tanstack/react-query"
-import { getReservation, getRoomById, getRooms } from "./fetch.service"
+import { getDashboard, getReservation, getRoomById, getRooms, getTasks } from "./fetch.service"
 
+export const useGetDashboard = () => {
+    return useQuery({
+        queryKey: ["user-getDashboard"],
+        queryFn: () => getDashboard(),
+        staleTime: 10000,
+        refetchOnWindowFocus: false,
+        refetchOnMount: true,
+        refetchOnReconnect: true,
+        retry: false
+    })
+}
+export const useGetTasks = () => {
+    return useQuery({
+        queryKey: ["user-getTasks"],
+        queryFn: () => getTasks(),
+        staleTime: 10000,
+        refetchOnWindowFocus: false,
+        refetchOnMount: true,
+        refetchOnReconnect: true,
+        retry: false
+    })
+}
 export const useResevatiosnData = () => {
     return useQuery({
         queryKey: ["user-reservations"],

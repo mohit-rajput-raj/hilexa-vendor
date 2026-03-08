@@ -98,7 +98,7 @@
 //             itemActiveBg: 'hsl(var(--primary) )',
 //             controlItemBgActive: 'hsl(var(--primary-foreground))',
 //             controlItemBgActiveHover: 'hsl(var(--primary-foreground))',
-            
+
 //           },
 //         },
 //       }}
@@ -115,7 +115,12 @@
 
 // export default BigCalender
 'use client'
-
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import React, { useEffect, useState } from 'react'
 import type { CalendarProps } from 'antd'
 import { Calendar, ConfigProvider, theme } from 'antd'
@@ -148,8 +153,13 @@ const getListData = (value: Dayjs): CalendarEvent[] => {
 }
 
 const BigCalender: React.FC = () => {
+  const [open, setOpen] = useState(false)
+  const [selectedDate, setSelectedDate] = useState<Dayjs | null>(null)
   const [mounted, setMounted] = useState(false)
-
+  const handleDateSelect = (date: Dayjs) => {
+    setSelectedDate(date)
+    setOpen(true)
+  }
   // Prevent hydration mismatch
   useEffect(() => {
     setMounted(true)
@@ -193,7 +203,17 @@ const BigCalender: React.FC = () => {
           fontFamily: 'inherit',
         },
       }}
-    >
+    ><Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              Schedule for {selectedDate?.format("DD MMM YYYY")}
+            </DialogTitle>
+          </DialogHeader>
+
+          <p>Add or view schedule for this date.</p>
+        </DialogContent>
+      </Dialog>
       <div className="w-full space-y-4">
         <div className="flex items-center justify-between px-1">
           <h2 className="text-2xl font-bold tracking-tight text-foreground">Schedule</h2>
@@ -212,8 +232,10 @@ const BigCalender: React.FC = () => {
 
         <div className="rounded-xl  bg-transparent text-card-foreground  overflow-hidden">
           <Calendar
-            cellRender={(current, info) => info.type === 'date' ? dateCellRender(current) : info.originNode}
-            className="p-0" // Removed padding to let cells touch the border
+            onSelect={handleDateSelect}
+            cellRender={(current, info) =>
+              info.type === "date" ? dateCellRender(current) : info.originNode
+            }
           />
         </div>
 

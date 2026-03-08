@@ -38,8 +38,8 @@ import { useUpdateReservationStatus } from "./hook/updateStstus";
 import { useResevatiosnData } from "@/services/tanstack.query";
 import { useRouter } from "next/navigation";
 
-  // import { useReservationsData } from "@/services/tanstack.query";
-  // import { useUpdateReservationStatus } from "@/services/reservationMutations";
+// import { useReservationsData } from "@/services/tanstack.query";
+// import { useUpdateReservationStatus } from "@/services/reservationMutations";
 
 export type Status = "confirmed" | "pending" | "Confirmed" | "Pending" | null;
 export type Reservation = {
@@ -60,11 +60,10 @@ const StatusBadge = React.memo(({ status }: { status: Status }) => {
 
   return (
     <span
-      className={`inline-flex px-3 py-1 rounded-md text-xs font-medium ${
-        isConfirmed
+      className={`inline-flex px-3 py-1 rounded-md text-xs font-medium ${isConfirmed
           ? "bg-[#E6F6F0] text-[#1DB47D]"
           : "bg-[#FEECEC] text-[#EB5757]"
-      }`}
+        }`}
     >
       {(status || "—").charAt(0).toUpperCase() + (status || "").slice(1)}
     </span>
@@ -119,16 +118,16 @@ export const columns: ColumnDef<Reservation>[] = [
     cell: ({ row }) => {
       const router = useRouter()
       return (
-         <div className="flex flex-col py-1">
-        <span className="font-medium text-slate-900">
-          <a className="cursor-pointer" onClick={()=>router.push(`/reservation/user/${row.original.bookingReference}`)}>
-            {row.original.guestName}
-          </a>
-        </span>
-        <span className="text-[11px] text-slate-400 font-mono uppercase tracking-wider">
-          {row.original.bookingReference}
-        </span>
-      </div>
+        <div className="flex flex-col py-1">
+          <span className="font-medium text-slate-900">
+            <a className="cursor-pointer" onClick={() => router.push(`/reservation/user/${row.original.bookingReference}`)}>
+              {row.original.guestName}
+            </a>
+          </span>
+          <span className="text-[11px] text-slate-400 font-mono uppercase tracking-wider">
+            {row.original.bookingReference}
+          </span>
+        </div>
       )
     },
   },
@@ -148,7 +147,7 @@ export const columns: ColumnDef<Reservation>[] = [
       </span>
     ),
   },
- {
+  {
     header: "Duration",
     cell: ({ row }) => {
       const nights = row.original.nights ?? 0;
@@ -186,27 +185,26 @@ export function GuestDataTable() {
 
   const { data: queryResult = [] } = useResevatiosnData();
   const reservations = queryResult?.data ?? [];
-  console.log(reservations)
-// [{
-//             "bookingReference": "BK-F1EBA5D09A5F",
-//             "guestName": "Mohit Rajput",
-//             "roomLabel": "Luxury Palace Room ",
-//             "specialRequest": null,
-//             "nights": 2,
-//             "checkIn": "2026-03-09T00:00:00.000Z",
-//             "checkOut": "2026-03-11T00:00:00.000Z",
-//             "status": "confirmed"
-//         },
-//         {
-//             "bookingReference": "BK-0C18D3DCA4A7",
-//             "guestName": "Mohit Rajput",
-//             "roomLabel": "Deluxe City View ",
-//             "specialRequest": null,
-//             "nights": 1,
-//             "checkIn": "2026-03-31T00:00:00.000Z",
-//             "checkOut": "2026-04-01T00:00:00.000Z",
-//             "status": "confirmed"
-//         }]
+  // [{
+  //             "bookingReference": "BK-F1EBA5D09A5F",
+  //             "guestName": "Mohit Rajput",
+  //             "roomLabel": "Luxury Palace Room ",
+  //             "specialRequest": null,
+  //             "nights": 2,
+  //             "checkIn": "2026-03-09T00:00:00.000Z",
+  //             "checkOut": "2026-03-11T00:00:00.000Z",
+  //             "status": "confirmed"
+  //         },
+  //         {
+  //             "bookingReference": "BK-0C18D3DCA4A7",
+  //             "guestName": "Mohit Rajput",
+  //             "roomLabel": "Deluxe City View ",
+  //             "specialRequest": null,
+  //             "nights": 1,
+  //             "checkIn": "2026-03-31T00:00:00.000Z",
+  //             "checkOut": "2026-04-01T00:00:00.000Z",
+  //             "status": "confirmed"
+  //         }]
   const table = useReactTable({
     data: reservations,
     columns,
