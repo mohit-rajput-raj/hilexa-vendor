@@ -33,7 +33,8 @@ import { toast } from "sonner";
 
 import { NewRoomProps, NewRoomSchema } from "./zod-schema";
 import { amenityIconMap } from "@/components/icons";
-
+import { addRooms } from "@/services/fetch.service";
+export const amenityKeys = Object.keys(amenityIconMap) as (keyof typeof amenityIconMap)[];
 export default function AddRoomForm({
   setEditMode,
   hotelId,
@@ -43,19 +44,20 @@ export default function AddRoomForm({
   >;
   hotelId: string;
 }) {
+
   const { uploadFile } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [previews, setPreviews] = useState<string[]>([]); // local blob URLs (temporary)
+  const [previews, setPreviews] = useState<string[]>([]);
   const form = useForm<NewRoomProps>({
     resolver: zodResolver(NewRoomSchema),
     defaultValues: {
-      hotelId,
+      hotelId: "699bf7b8a62643a1c6cd84fd",
       name: "family room",
       description: "",
       basePrice: 1000,
       discountPrice: 0,
-      capacity: [{ adults: 2, children: 0 }],
+      capacity: [{ adults: 1, children: 0 }],
       beds: [{ type: "double", quantity: 1 }],
       amenities: [],
       roomSizeSqm: 25,
@@ -73,7 +75,6 @@ export default function AddRoomForm({
   const { fields: bedFields, append: appendBed, remove: removeBed } =
     useFieldArray({ control: form.control, name: "beds" });
 
-  // Cleanup blob URLs
   useEffect(() => {
     return () => {
       previews.forEach((url) => URL.revokeObjectURL(url));
@@ -86,21 +87,23 @@ export default function AddRoomForm({
     const files = Array.from(e.target.files);
     setUploading(true);
 
-    // 1. Create instant local previews
     const newPreviews = files.map((file) => URL.createObjectURL(file));
     setPreviews((prev) => [...prev, ...newPreviews]);
 
-    // 2. Upload files
-    const newUrls: string[] = [];
+    const newUrls: { url: string, public_id: string, resource_type: string }[] = [];
 
     for (const file of files) {
       try {
         const result = await uploadFile(file);
-        if (result?.url) {
-          newUrls.push(result.url);
+        if (result?.url && result?.public_id && result?.resource_type) {
+          newUrls.push({
+            url: result.url,
+            public_id: result.public_id,
+            resource_type: result.resource_type,
+          });
           toast.success(`Uploaded: ${file.name}`);
         } else {
-          throw new Error("No URL returned");
+          throw new Error("Incomplete upload data received");
         }
       } catch (err) {
         console.error("Upload failed:", file.name, err);
@@ -108,7 +111,6 @@ export default function AddRoomForm({
       }
     }
 
-    // 3. Update form with **uploaded URLs** (this is what gets submitted)
     const current = form.getValues("images") || [];
     form.setValue("images", [...current, ...newUrls], {
       shouldValidate: true,
@@ -116,17 +118,15 @@ export default function AddRoomForm({
     });
 
     setUploading(false);
-    e.target.value = ""; // allow re-select same file
+    e.target.value = "";
   };
 
   const removeImage = (index: number) => {
-    // Remove preview
     setPreviews((prev) => {
       URL.revokeObjectURL(prev[index]);
       return prev.filter((_, i) => i !== index);
     });
 
-    // Remove from form values (secure URLs)
     const current = form.getValues("images") || [];
     form.setValue(
       "images",
@@ -138,9 +138,8 @@ export default function AddRoomForm({
   const onSubmit = async (data: NewRoomProps) => {
     setLoading(true);
     try {
-      console.log("Submitting:", data);
+      const res = await addRooms(data);
 
-      // await fetch("/api/rooms", { method: "POST", body: JSON.stringify(data), headers: { "Content-Type": "application/json" } });
 
       toast.success("Room created successfully!");
       form.reset();
@@ -178,12 +177,11 @@ export default function AddRoomForm({
                 <AccordionContent>
                   <div className="space-y-6">
                     <div className="flex flex-wrap gap-4">
-                      {/* Previews – using uploaded URLs when available */}
                       {form.watch("images").map((url, idx) => (
-                        <div key={url} className="relative group">
+                        <div key={url.url} className="relative group">
                           <div className="h-28 w-40 rounded-xl overflow-hidden border shadow-sm">
                             <Image
-                              src={url}
+                              src={url.url}
                               alt={`Room image ${idx + 1}`}
                               width={160}
                               height={112}
@@ -193,7 +191,7 @@ export default function AddRoomForm({
                           <button
                             type="button"
                             onClick={() => removeImage(idx)}
-                            className="absolute -top-2 -right-2 bg-destructive text-white rounded-full p-1.5 shadow-md hover:bg-destructive/90"
+                            className="absolute -top-2 -right-2 bg-card text-white rounded-full z-4 p-1.5 shadow-md hover:bg-destructive/90"
                             disabled={uploading}
                           >
                             <X size={16} />
@@ -201,11 +199,9 @@ export default function AddRoomForm({
                         </div>
                       ))}
 
-                      {/* Upload button with spinner */}
                       <label
-                        className={`h-28 w-40 rounded-xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer hover:bg-muted/50 transition-all ${
-                          uploading ? "opacity-60 cursor-not-allowed" : ""
-                        }`}
+                        className={`h-28 w-40 rounded-xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer hover:bg-muted/50 transition-all ${uploading ? "opacity-60 cursor-not-allowed" : ""
+                          }`}
                       >
                         <Input
                           type="file"
@@ -237,7 +233,6 @@ export default function AddRoomForm({
                 </AccordionContent>
               </AccordionItem>
 
-              {/* ── Basic Info ─────────────────────────────────── */}
               <AccordionItem value="basic">
                 <AccordionTrigger>Basic Information</AccordionTrigger>
                 <AccordionContent className="space-y-6 pt-4">
@@ -362,7 +357,7 @@ export default function AddRoomForm({
                   />
                 </AccordionContent>
               </AccordionItem>
-{/* //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */}
+              {/* //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */}
               {/* ── Capacity & Beds ────────────────────────────── */}
               <AccordionItem value="capacity">
                 <AccordionTrigger>Capacity & Beds</AccordionTrigger>
@@ -375,7 +370,7 @@ export default function AddRoomForm({
                         type="button"
                         variant="outline"
                         size="sm"
-                        onClick={() => appendCapacity({ adults: 2, children: 0 })}
+                        onClick={() => appendCapacity({ adults: 1, children: 0 })}
                       >
                         Add Capacity Option
                       </Button>
@@ -390,7 +385,11 @@ export default function AddRoomForm({
                             <FormItem className="flex-1">
                               <FormLabel>Adults</FormLabel>
                               <FormControl>
-                                <Input type="number" min={1} {...field} />
+                                <Input
+                                  type="number"
+                                  {...field}
+                                  onChange={(e) => field.onChange(Number(e.target.value))}
+                                />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -403,7 +402,11 @@ export default function AddRoomForm({
                             <FormItem className="flex-1">
                               <FormLabel>Children</FormLabel>
                               <FormControl>
-                                <Input type="number"  {...field} />
+                                <Input
+                                  type="number"
+                                  {...field}
+                                  onChange={(e) => field.onChange(Number(e.target.value))}
+                                />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -458,7 +461,11 @@ export default function AddRoomForm({
                             <FormItem className="w-32">
                               <FormLabel>Quantity</FormLabel>
                               <FormControl>
-                                <Input type="number" min={1} {...field} />
+                                <Input
+                                  type="number"
+                                  {...field}
+                                  onChange={(e) => field.onChange(Number(e.target.value))}
+                                />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -486,7 +493,7 @@ export default function AddRoomForm({
                   {/* You can keep or adapt your CheckboxGrid component here */}
                   {/* Example placeholder */}
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 pt-4">
-                    {["wifi", "ac", "tv", "minibar", "coffee", "safe", "balcony"].map((id) => (
+                    {amenityKeys.map((id) => (
                       <FormField
                         key={id}
                         control={form.control}
@@ -520,7 +527,7 @@ export default function AddRoomForm({
               <Button
                 type="submit"
                 size="lg"
-                disabled={loading || uploading 
+                disabled={loading || uploading
 
                 }
                 className="flex-1"

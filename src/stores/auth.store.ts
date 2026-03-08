@@ -40,7 +40,7 @@ interface AuthStates {
   ) => Promise<{ success: boolean; message: string }>;
   uploadFile: (
     file: File,
-  ) => Promise<{ success: boolean; url?: string; message: string }>;
+  ) => Promise<{ success: boolean; url?: string; message: string, public_id?: string, resource_type?: string }>;
 }
 
 interface Login_signup_Data {
@@ -167,6 +167,9 @@ export const useAuthStore = create<AuthStates>()((set) => ({
           success: true,
           url: res.data.files[0].url,
           message: "File uploaded successfully",
+           public_id: res.data.public_id as string,
+            resource_type:res.data.resource_type as  string
+
         };
       }
       return {

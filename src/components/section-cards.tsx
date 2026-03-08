@@ -1,3 +1,4 @@
+'use client'
 import { Icon, IconTrendingDown, IconTrendingUp } from "@tabler/icons-react"
 
 import { Badge } from "@/components/ui/badge"
@@ -15,6 +16,8 @@ import {
   IconUsers,
   IconArrowUpRight,
 } from "@tabler/icons-react"
+import { DashboardData } from "@/app/(dashboard)/dashboard/page"
+import card from "antd/es/card"
 
 export const CardsData: {
   description: string
@@ -58,30 +61,30 @@ export const CardsData: {
     },
   ]
 
-export function SectionCards() {
+export function SectionCards({dash}:{dash:DashboardData}) {
+  
   return (
-    <div className="w-full *:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
-      {CardsData.map((card) => (
-        <Card key={card.description} className="@container/card">
+    <div className="w-full *:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4  *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs  @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
+        <Card  className="@container/card">
           <CardHeader>
-            <CardDescription>{card.description}</CardDescription>
+            <CardDescription>{CardsData[0].description}</CardDescription>
 
             <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-              {card.title}
+              {CardsData[0].title}
             </CardTitle>
 
             <CardAction>
               <Badge variant="outline" className="flex items-center gap-1">
-                <card.trendingIcon size={16} />
-                {card.trending}
+                {/* <CardsData.trendingIcon size={16} /> */}
+                {CardsData[0].trending}
               </Badge>
               <p>
-                {card.trendingValue}
+                {dash.stats.newBookings}
               </p>
             </CardAction>
           </CardHeader>
         </Card>
-      ))}
+      
 
     </div>
   )

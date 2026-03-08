@@ -16,6 +16,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
+import { useEffect, useState } from "react"
 
 interface NavSubItem {
   title: string
@@ -36,6 +37,17 @@ interface NavMainProps {
 export function NavMain({ items }: NavMainProps) {
   const router = useRouter()
   const pathname = usePathname()
+  const [isMounted, setIsMounted] = useState(false)
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
+  // Prevent mismatched IDs by not rendering the dynamic 
+  // collapsible elements until the client is ready
+  if (!isMounted) {
+    return null // or a simplified loading skeleton
+  }
 
   return (
     <SidebarMenu className="gap-1">
