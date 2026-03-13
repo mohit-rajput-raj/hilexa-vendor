@@ -1,4 +1,3 @@
-'use client'
 import React, { Suspense, useEffect } from "react";
 import { SmallCalendar } from "./_component/small-calender";
 import BigCalender from "./_component/big-calander";
@@ -13,12 +12,7 @@ import { useCurrentUser } from "@/services/queryes";
 type Props = {};
 
 const page = (props: Props) => {
-  const router = useRouter()
-    useEffect(()=>{
-      if( localStorage.getItem("accessToken") !== null){
-        router.push("/dashboard")
-      }
-    },[])
+  
   return (
     <ErrorBoundary
       fallback={
