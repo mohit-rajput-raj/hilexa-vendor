@@ -24,6 +24,10 @@ interface AuthStates {
   isLoging: boolean;
   isSiging: boolean;
   currUser: User | null;
+  hotel:{
+    _id:string,
+    name:string,
+  }
   userLogin: (
     data: Login_signup_Data,
   ) => Promise<{ success: boolean; message: string }>;
@@ -56,6 +60,10 @@ export const useAuthStore = create<AuthStates>()((set) => ({
   isLoging: false,
   isSiging: false,
   currUser: null,
+  hotel:{
+    _id:"",
+    name:"",
+  },
 
   userLogin: async (data: Login_signup_Data) => {
     set({ isLoging: true });
@@ -64,7 +72,11 @@ export const useAuthStore = create<AuthStates>()((set) => ({
       if (res.data.success) {
         set({ currUser: res.data.data.user });
         const token = res.data.accessToken;
+        const hotel = res.data.data.hotel;
+        set({ hotel });
         localStorage.setItem("accessToken", token);
+        localStorage.setItem("hotelId" , hotel._id)
+
         return { success: true, message: res.data.message };
       }
       return { success: false, message: res.data.message || "Login failed" };
@@ -167,8 +179,8 @@ export const useAuthStore = create<AuthStates>()((set) => ({
           success: true,
           url: res.data.files[0].url,
           message: "File uploaded successfully",
-           public_id: res.data.public_id as string,
-            resource_type:res.data.resource_type as  string
+           public_id: res.data.files[0].public_id as string,
+            resource_type:res.data.files[0].resource_type as  string
 
         };
       }

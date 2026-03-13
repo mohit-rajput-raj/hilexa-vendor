@@ -7,7 +7,7 @@ import {
   BarChart, Bar, PieChart, Pie, Cell,
   Tooltip as RechartsTooltip // Aliased to avoid conflict
 } from 'recharts';
-import { DashboardData, RevenueChartItem } from "../page";
+import { DashboardData, ReservationChartItem, RevenueChartItem } from "../page";
 import { BookingsDataTable } from "./bookingList";
 import { useGetDashboard } from "@/services/tanstack.query";
 import { PageSkeleton } from "../../rooms/_components/details.skeleton";
@@ -24,15 +24,15 @@ function getMonthName(num: number) {
   return months[num - 1] || "Invalid month";
 }
 
-const reservationData = [
-  { day: '12 Jun', booked: 60, canceled: 20 },
-  { day: '13 Jun', booked: 65, canceled: 18 },
-  { day: '14 Jun', booked: 62, canceled: 25 },
-  { day: '15 Jun', booked: 72, canceled: 12 },
-  { day: '16 Jun', booked: 78, canceled: 15 },
-  { day: '17 Jun', booked: 64, canceled: 16 },
-  { day: '18 Jun', booked: 52, canceled: 35 },
-];
+// const reservationData = [
+//   { day: '12 Jun', booked: 60, canceled: 20 },
+//   { day: '13 Jun', booked: 65, canceled: 18 },
+//   { day: '14 Jun', booked: 62, canceled: 25 },
+//   { day: '15 Jun', booked: 72, canceled: 12 },
+//   { day: '16 Jun', booked: 78, canceled: 15 },
+//   { day: '17 Jun', booked: 64, canceled: 16 },
+//   { day: '18 Jun', booked: 52, canceled: 35 },
+// ];
 
 const platformData = [
   { name: 'Direct Booking', value: 61, color: '#DCFCE7' },
@@ -51,9 +51,15 @@ export function HotelDashboard() {
   const dash = s?.data || { roomSummary: {}, recentBookings: [], revenueChart: [] };
 
   const revenuechartData = dash?.revenueChart?.map((v: RevenueChartItem) => ({
-    name: getMonthName(v._id.month) + " " + v._id.year,
+    name: v.month,
     revenue: v.revenue
   }));
+   const reservationData = dash?.reservationChart?.map((v: ReservationChartItem) => ({
+    day: v.date,
+    booked: v.booked,
+    canceled: v.cancelled
+  }));
+  
 
   const total = (dash.roomSummary.occupiedRooms || 0) + (dash.roomSummary.availableRooms || 0) + 87 + 13;
 
@@ -161,7 +167,7 @@ export function HotelDashboard() {
         </div>
 
         {/* Reservations and Platform Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1  gap-6">
           <Card className="border-none shadow-sm">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-lg font-semibold">Reservations</CardTitle>
@@ -197,7 +203,7 @@ export function HotelDashboard() {
           </Card>
 
           {/* Platform Pie Chart */}
-          <Card className="border-none shadow-sm">
+          {/* <Card className="border-none shadow-sm">
             <CardHeader className="pb-2"><CardTitle className="text-lg font-semibold">Booking by Platform</CardTitle></CardHeader>
             <CardContent className="flex flex-col md:flex-row items-center">
               <div className="w-full md:w-1/2 h-[250px]">
@@ -222,7 +228,7 @@ export function HotelDashboard() {
                 ))}
               </div>
             </CardContent>
-          </Card>
+          </Card> */}
         </div>
 
         <div>

@@ -30,15 +30,21 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { useCurrentUser } from "@/services/queryes"
-import { useRouter } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { Spinner } from "./ui/spinner"
 import { useState, useEffect } from "react"
+import { useQueryClient } from "@tanstack/react-query";
 
 export function NavUser() {
   const router = useRouter()
+  const pathname = usePathname()
+
   const { isMobile } = useSidebar()
-   const {data:vendor, isLoading, refetch, isRefetching} = useCurrentUser();
-    const [mounted, setMounted] = useState(false)
+  const {data:vendor, isLoading, refetch, isRefetching} = useCurrentUser();
+  const [mounted, setMounted] = useState(false)
+
+const queryClient = useQueryClient();
+
 
   useEffect(() => {
     setMounted(true)
@@ -95,9 +101,13 @@ export function NavUser() {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={()=>{
+                if(pathname !== "/profile"){
+                  router.push("/profile")
+                }
+              }}>
                 <IconUserCircle />
-                Account
+                Profile
               </DropdownMenuItem>
 
               <DropdownMenuItem>
@@ -108,6 +118,7 @@ export function NavUser() {
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={()=>{
               localStorage.removeItem("accessToken")
+              queryClient.clear();
               router.push("/login")
               
             }}>

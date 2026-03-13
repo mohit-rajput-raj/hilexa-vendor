@@ -1,91 +1,153 @@
 'use client'
-import { Icon, IconTrendingDown, IconTrendingUp } from "@tabler/icons-react"
+
+import { IconTrendingDown, IconTrendingUp, IconCurrencyDollar, IconUsers, IconArrowUpRight, IconDoorEnter, IconDoorExit } from "@tabler/icons-react"
 
 import { Badge } from "@/components/ui/badge"
 import {
   Card,
-  CardAction,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import {
-  IconCurrencyDollar,
-  IconShoppingCart,
-  IconUsers,
-  IconArrowUpRight,
-} from "@tabler/icons-react"
-import { DashboardData } from "@/app/(dashboard)/dashboard/page"
-import card from "antd/es/card"
+import { DashboardData } from "@/app/(dashboard)/dashboard/page" // adjust path if needed
 
-export const CardsData: {
-  description: string
+// ────────────────────────────────────────────────
+//  Card configuration – maps real stat keys → display
+// ────────────────────────────────────────────────
+const statCardsConfig = [
+  {
+    key: "totalRevenue" as const,
+    title: "Total Revenue",
+    description: "Revenue this month",
+    icon: IconCurrencyDollar,
+    trendPrefix: "+",               // can be made dynamic later
+    trendValue: "12.5%",           // ← placeholder – replace with real comparison later
+    trendComparedTo: "vs last month",
+    trendIcon: IconTrendingUp,
+    valueFormatter: (val: number) => `$${val.toLocaleString()}`,
+    badgeVariant: "default" as const,
+  },
+  {
+    key: "newBookings" as const,
+    title: "New Bookings",
+    description: "Bookings this month",
+    icon: IconUsers,
+    trendPrefix: "+",
+    trendValue: "8.1%",
+    trendComparedTo: "vs last month",
+    trendIcon: IconTrendingUp,
+    valueFormatter: (val: number) => val.toLocaleString(),
+    badgeVariant: "default" as const,
+  },
+  {
+    key: "todayCheckIns" as const,
+    title: "Today Check-ins",
+    description: "Expected arrivals today",
+    icon: IconDoorEnter,
+    trendPrefix: "",
+    trendValue: "—",
+    trendComparedTo: "today",
+    trendIcon: null,                // no trend for today stats
+    valueFormatter: (val: number) => val.toString(),
+    badgeVariant: "secondary" as const,
+  },
+  {
+    key: "todayCheckOuts" as const,
+    title: "Today Check-outs",
+    description: "Expected departures today",
+    icon: IconDoorExit,
+    trendPrefix: "",
+    trendValue: "—",
+    trendComparedTo: "today",
+    trendIcon: null,
+    valueFormatter: (val: number) => val.toString(),
+    badgeVariant: "secondary" as const,
+  },
+] satisfies Array<{
+  key: keyof DashboardData["stats"]
   title: string
-  icon: Icon
-  trending: string
-  trendingIcon: Icon
-  trendingValue: string
-}[] = [
-    {
-      description: "Total Revenue",
-      title: "$1,250.00",
-      icon: IconCurrencyDollar,
-      trending: "+12.5%",
-      trendingIcon: IconTrendingUp,
-      trendingValue: "Compared to last month",
-    },
-    {
-      description: "Total Orders",
-      title: "320",
-      icon: IconShoppingCart,
-      trending: "-4.3%",
-      trendingIcon: IconTrendingDown,
-      trendingValue: "Compared to last week",
-    },
-    {
-      description: "New Customers",
-      title: "89",
-      icon: IconUsers,
-      trending: "+8.1%",
-      trendingIcon: IconTrendingUp,
-      trendingValue: "Compared to last month",
-    },
-    {
-      description: "Conversion Rate",
-      title: "3.4%",
-      icon: IconArrowUpRight,
-      trending: "+1.2%",
-      trendingIcon: IconTrendingUp,
-      trendingValue: "Since yesterday",
-    },
-  ]
+  description: string
+  icon: any
+  trendPrefix: string
+  trendValue: string
+  trendComparedTo: string
+  trendIcon: any | null
+  valueFormatter: (val: number) => string
+  badgeVariant?: "default" | "secondary" | "outline"
+}>
 
-export function SectionCards({dash}:{dash:DashboardData}) {
-  
+interface SectionCardsProps {
+  dash: DashboardData
+}
+
+export function SectionCards({ dash }: SectionCardsProps) {
+  const stats = dash?.stats ?? {
+    newBookings: 0,
+    todayCheckIns: 0,
+    todayCheckOuts: 0,
+    totalRevenue: 0,
+  }
+
   return (
-    <div className="w-full *:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4  *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs  @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
-        <Card  className="@container/card">
-          <CardHeader>
-            <CardDescription>{CardsData[0].description}</CardDescription>
+    <div className="
+      grid grid-cols-1 gap-4 sm:grid-cols-2 
+      lg:grid-cols-4
+      w-full
+    ">
+      {statCardsConfig.map((card, idx) => {
+        const value = stats[card.key] as number
+        const formattedValue = card.valueFormatter(value)
 
-            <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-              {CardsData[0].title}
-            </CardTitle>
+        const showTrend = card.trendIcon !== null
 
-            <CardAction>
-              <Badge variant="outline" className="flex items-center gap-1">
-                {/* <CardsData.trendingIcon size={16} /> */}
-                {CardsData[0].trending}
-              </Badge>
-              <p>
-                {dash.stats.newBookings}
-              </p>
-            </CardAction>
-          </CardHeader>
-        </Card>
-      
+        return (
+          <Card 
+            key={card.key} 
+            className="
+              bg-gradient-to-t from-primary/5 to-card 
+              shadow-xs dark:bg-card
+              transition-all hover:shadow-md
+            "
+          >
+            <CardHeader className="pb-2">
+              <div className="flex items-center justify-between">
+                <CardDescription className="text-muted-foreground">
+                  {card.title}
+                </CardDescription>
+                <card.icon className="h-5 w-5 text-muted-foreground/70" />
+              </div>
 
+              <CardTitle className="text-2xl font-bold tabular-nums tracking-tight sm:text-3xl">
+                {formattedValue}
+              </CardTitle>
+
+              {showTrend && (
+                <div className="mt-1 flex items-center gap-1.5 text-sm">
+                  <Badge 
+                    variant={card.badgeVariant}
+                    className={`
+                      flex items-center gap-1 px-2 py-0.5
+                      ${card.trendPrefix.startsWith("+") ? "text-green-600" : "text-red-600"}
+                    `}
+                  >
+                    {card.trendIcon && <card.trendIcon size={14} />}
+                    {card.trendPrefix}{card.trendValue}
+                  </Badge>
+                  <span className="text-muted-foreground">
+                    {card.trendComparedTo}
+                  </span>
+                </div>
+              )}
+
+              {!showTrend && (
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {card.trendComparedTo}
+                </p>
+              )}
+            </CardHeader>
+          </Card>
+        )
+      })}
     </div>
   )
 }

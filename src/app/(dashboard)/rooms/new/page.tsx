@@ -34,6 +34,7 @@ import { toast } from "sonner";
 import { NewRoomProps, NewRoomSchema } from "./zod-schema";
 import { amenityIconMap } from "@/components/icons";
 import { addRooms } from "@/services/fetch.service";
+import { Verify } from "@/app/(auth)/authMiddleware";
 export const amenityKeys = Object.keys(amenityIconMap) as (keyof typeof amenityIconMap)[];
 export default function AddRoomForm({
   setEditMode,
@@ -95,6 +96,7 @@ export default function AddRoomForm({
     for (const file of files) {
       try {
         const result = await uploadFile(file);
+        
         if (result?.url && result?.public_id && result?.resource_type) {
           newUrls.push({
             url: result.url,

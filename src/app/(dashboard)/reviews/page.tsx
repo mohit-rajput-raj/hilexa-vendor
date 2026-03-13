@@ -7,7 +7,7 @@ import { ErrorBoundary } from "react-error-boundary";
 import { MessageModal } from "../rooms/_components/full-frame";
 import { PageSkeleton } from "../rooms/_components/details.skeleton";
 // import { ChartBarMultiple } from './_components/review-statics'
-
+import { Verify } from '@/app/(auth)/authMiddleware'
 
 const page = () => {
   return (
