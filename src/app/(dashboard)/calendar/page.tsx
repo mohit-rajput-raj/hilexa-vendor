@@ -7,6 +7,11 @@ import MainCalenderFrame from "./_component/hotel-types";
 type Props = {};
 
 const page = (props: Props) => {
+
+
+
+
+  
   
   return (
     <ErrorBoundary
