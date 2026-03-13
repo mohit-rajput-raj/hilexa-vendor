@@ -112,7 +112,7 @@ function LoginForm({
               />
             </Field>
           <Field>
-            <Button type="submit">Login</Button>
+            <Button type="submit" disabled={loading}>{loading?"Loading...":"Login"}</Button>
           </Field>
           <FieldSeparator>Or</FieldSeparator>
           <Field className="grid gap-4 sm:grid-cols-2">
