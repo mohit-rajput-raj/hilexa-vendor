@@ -1,307 +1,406 @@
-// 'use client'
-
-// import React from 'react'
-// import type { BadgeProps, CalendarProps } from 'antd'
-// import { Badge, Calendar, ConfigProvider } from 'antd'
-// import type { Dayjs } from 'dayjs'
-
-// type EventType = {
-//   type: BadgeProps['status']
-//   content: string
-// }
-
-// const getListData = (value: Dayjs): EventType[] => {
-//   switch (value.date()) {
-//     case 8:
-//       return [
-//         { type: 'warning', content: 'This is warning event.' },
-//         { type: 'success', content: 'This is usual event.' },
-//       ]
-//     case 10:
-//       return [
-//         { type: 'warning', content: 'This is warning event.' },
-//         { type: 'success', content: 'This is usual event.' },
-//         { type: 'error', content: 'This is error event.' },
-//       ]
-//     case 15:
-//       return [
-//         { type: 'warning', content: 'This is warning event' },
-//         { type: 'success', content: 'This is very long usual event......' },
-//         { type: 'error', content: 'This is error event 1.' },
-//         { type: 'error', content: 'This is error event 2.' },
-//         { type: 'error', content: 'This is error event 3.' },
-//         { type: 'error', content: 'This is error event 4.' },
-//       ]
-//     default:
-//       return []
-//   }
-// }
-
-// const getMonthData = (value: Dayjs) => {
-//   if (value.month() === 8) {
-//     return 1394
-//   }
-//   return null
-// }
-
-// const BigCalender: React.FC = () => {
-//   const monthCellRender = (value: Dayjs) => {
-//     const num = getMonthData(value)
-
-//     return num ? (
-//       <div className="flex flex-col items-center justify-center text-xs">
-//         <span className="font-semibold text-primary">{num}</span>
-//         <span className="text-muted-foreground">Backlog</span>
-//       </div>
-//     ) : null
-//   }
-
-//   const dateCellRender = (value: Dayjs) => {
-//     const listData = getListData(value)
-
-//     return (
-//       <div className="space-y-1">
-//         {listData.map((item) => (
-//           <div
-//             key={item.content}
-//             className="text-[10px] truncate rounded-md px-1 py-0.5 bg-muted text-muted-foreground"
-//           >
-//             <Badge status={item.type} text={item.content} />
-//           </div>
-//         ))}
-//       </div>
-//     )
-//   }
-
-//   const cellRender: CalendarProps<Dayjs>['cellRender'] = (current, info) => {
-//     if (info.type === 'date') {
-//       return dateCellRender(current)
-//     }
-//     if (info.type === 'month') {
-//       return monthCellRender(current)
-//     }
-//     return info.originNode
-//   }
-
-//   return (
-//     <ConfigProvider
-//       theme={{
-//         token: {
-//           colorPrimary: 'hsl(var(--primary))',
-//           borderRadius: 12,
-//           colorBgContainer: 'hsl(var(--card))',
-//           colorText: 'hsl(var(--foreground))',
-//           colorBorder: 'hsl(var(--border))',
-//         },
-//         components: {
-//           Calendar: {
-//             itemActiveBg: 'hsl(var(--primary) )',
-//             controlItemBgActive: 'hsl(var(--primary-foreground))',
-//             controlItemBgActiveHover: 'hsl(var(--primary-foreground))',
-
-//           },
-//         },
-//       }}
-//     >
-//       <div className="rounded-2xl border bg-card p-4 shadow-sm">
-//         <Calendar
-//           cellRender={cellRender}
-//           className=" text-foreground"
-//         />
-//       </div>
-//     </ConfigProvider>
-//   )
-// }
-
-// export default BigCalender
-'use client'
+"use client";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import React, { useEffect, useState } from 'react'
-import type { CalendarProps } from 'antd'
-import { Calendar, ConfigProvider, theme } from 'antd'
-import type { Dayjs } from 'dayjs'
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+} from "@/components/ui/dialog";
+import React, { useEffect, useState } from "react";
+import { Calendar, ConfigProvider } from "antd";
+import type { Dayjs } from "dayjs";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { useGetCalender } from "./querys"; // ← your query hook
+import { useAuthStore } from "@/stores/auth.store";
+import { PageSkeleton } from "../../rooms/_components/details.skeleton";
+import { deleteCalenderData, updateCalenderData } from "./fetch.service";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { CalendarIcon, Trash2 } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
+import { format } from "date-fns";
+import { Input } from "@/components/ui/input";
 
-type EventCategory = 'Maintenance' | 'Training' | 'Meeting' | 'Event' | 'Guest Service'
+interface RoomCalendarData {
+  date: string; // "2026-03-01"
+  availableRooms: number;
+  bookedRooms: number;
+  blockedRooms: number;
+  price: number;
+}
 
 interface CalendarEvent {
-  time: string
-  title: string
-  category: EventCategory
+  time: string;
+  title: string;
+  category: "Available" | "Low" | "Booked" | "Blocked";
 }
 
-const categoryStyles: Record<EventCategory, string> = {
-  Maintenance: "bg-violet-500/20 text-violet-600 dark:text-violet-300 border-l-4 border-violet-500",
-  Training: "bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border-l-4 border-emerald-500",
-  Meeting: "bg-cyan-500/20 text-cyan-600 dark:text-cyan-300 border-l-4 border-cyan-500",
-  Event: "bg-yellow-500/20 text-yellow-600 dark:text-yellow-300 border-l-4 border-yellow-500",
-  "Guest Service": "bg-lime-500/20 text-lime-600 dark:text-lime-300 border-l-4 border-lime-500",
-}
+const BigCalender: React.FC<{ selected: string | null }> = ({ selected }) => {
+  const [open, setOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Dayjs | null>(null);
+  const [mounted, setMounted] = useState(false);
+  const { hotel } = useAuthStore();
+  const [hotelId, setHotelId] = useState<string | null>(null);
 
-const getListData = (value: Dayjs): CalendarEvent[] => {
-  const date = value.date()
-  if (date === 1) return [{ time: '11:00 AM - 1:00 PM', title: 'Room Inspection', category: 'Maintenance' }]
-  if (date === 5) return [{ time: '2:00 PM - 4:00 PM', title: 'Fire Safety Training', category: 'Training' }]
-  if (date === 12) return [{ time: '9:00 AM - 1:00 PM', title: 'Inventory Check', category: 'Maintenance' }]
-  return []
-}
-
-const BigCalender: React.FC = () => {
-  const [open, setOpen] = useState(false)
-  const [selectedDate, setSelectedDate] = useState<Dayjs | null>(null)
-  const [mounted, setMounted] = useState(false)
-  const handleDateSelect = (date: Dayjs) => {
-    setSelectedDate(date)
-    setOpen(true)
-  }
-  // Prevent hydration mismatch
   useEffect(() => {
-    setMounted(true)
-  }, [])
+    const id = localStorage.getItem("hotelId");
+    setHotelId(id);
+  }, []);
+
+  const { data, isLoading, isRefetching , refetch } = useGetCalender(selected || "");
+
+  // ← Your real data (example structure you shared)
+  const calendarData: RoomCalendarData[] = data?.data?.calendar || [];
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const getStatusForDate = (dateStr: string): RoomCalendarData | undefined => {
+    return calendarData.find((item) => item.date === dateStr);
+  };
+  
 
   const dateCellRender = (value: Dayjs) => {
-    const listData = getListData(value)
-    return (
-      <div className="flex flex-col gap-1 h-full min-h-[100px] mt-1 ">
-        {listData.map((item, idx) => (
-          <div
-            key={idx}
-            className={cn(
-              "p-2 rounded-r-md text-[10px] leading-tight flex flex-col justify-between h-full shadow-sm",
-              categoryStyles[item.category]
-            )}
-          >
-            <div>
-              <div className="font-bold uppercase tracking-tighter opacity-80">{item.time}</div>
-              <div className="font-semibold text-[11px] mt-1 leading-snug">{item.title}</div>
-            </div>
-            <div className="text-[9px] mt-2 font-bold uppercase opacity-60">
-              {item.category}
-            </div>
-          </div>
-        ))}
-      </div>
-    )
-  }
+    const dateStr = value.format("YYYY-MM-DD");
+    const dayData = getStatusForDate(dateStr);
 
-  if (!mounted) return null
+    if (!dayData) {
+      return (
+        <div className="text-xs text-muted-foreground/70 italic p-1">
+          No data
+        </div>
+      );
+    }
+
+    const occupancy = dayData.bookedRooms + dayData.blockedRooms;
+    const availabilityText = `abailable ${dayData.availableRooms}`;
+    let status: CalendarEvent["category"] = "Available";
+    let bgClass =
+      "bg-emerald-500/10 border-l-4 border-emerald-500 text-emerald-700 dark:text-emerald-300";
+
+    if (dayData.availableRooms === 0) {
+      status = "Booked";
+      bgClass =
+        "bg-rose-500/10 border-l-4 border-rose-500 text-rose-700 dark:text-rose-300";
+    } else if (dayData.availableRooms <= 1) {
+      status = "Low";
+      bgClass =
+        "bg-amber-500/10 border-l-4 border-amber-500 text-amber-700 dark:text-amber-300";
+    }
+
+    return (
+      <div
+        className={cn(
+          "p-2 rounded-r text-xs h-full flex flex-col justify-between",
+          bgClass,
+        )}
+      >
+        <div className="font-semibold">₹{dayData.price.toLocaleString()}</div>
+
+        <div className="mt-1">
+          <div className="font-bold text-sm">{availabilityText}</div>
+          <div className="text-[10px] opacity-80">{status}</div>
+        </div>
+
+        {dayData.blockedRooms > 0 && (
+          <div className="text-[10px] text-rose-600/80 mt-1">
+            {dayData.blockedRooms} blocked
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const handleDateSelect = (date: Dayjs) => {
+    setSelectedDate(date);
+    setOpen(true);
+  };
+
+  if (!mounted) return null;
+  // if (isLoading || isRefetching) {
+  //   return (
+  //     <div className="w-full h-full">
+  //       <PageSkeleton />
+  //     </div>
+  //   );
+  // }
 
   return (
     <ConfigProvider
       theme={{
         token: {
-          colorPrimary: 'var(--primary)',
-          colorBgContainer: 'transparent',
-          colorText: 'var(--foreground)',
-          colorBorderSecondary: 'var(--border)',
-          fontFamily: 'inherit',
+          colorPrimary: "var(--primary)",
+          colorBgContainer: "transparent",
+          colorText: "var(--foreground)",
+          colorBorderSecondary: "var(--border)",
+          fontFamily: "inherit",
         },
       }}
-    ><Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              Schedule for {selectedDate?.format("DD MMM YYYY")}
-            </DialogTitle>
-          </DialogHeader>
+    >
+      {selectedDate && (
+        <UpdateCalendarOverrideDialog
+        refatch={()=>refetch()}
+          roomTypeId={selected}
+          date={selectedDate}
+          currentData={getStatusForDate(selectedDate.format("YYYY-MM-DD"))}
+          open={open}
+          onOpenChange={setOpen}
+          onSuccess={() => {}}
+        />
+      )}
 
-          <p>Add or view schedule for this date.</p>
-        </DialogContent>
-      </Dialog>
-      <div className="w-full space-y-4">
+      <div className="w-full space-y-5">
         <div className="flex items-center justify-between px-1">
-          <h2 className="text-2xl font-bold tracking-tight text-foreground">Schedule</h2>
+          <h2 className="text-2xl font-bold tracking-tight">
+            Room Availability
+          </h2>
           <div className="flex items-center gap-2">
             <div className="flex bg-muted p-1 rounded-lg">
-              <Button variant="ghost" size="sm" className="h-7 rounded-md px-4">Day</Button>
-              <Button variant="ghost" size="sm" className="h-7 rounded-md px-4">Week</Button>
-              <Button variant="default" size="sm" className="h-7 rounded-md px-4 shadow-sm">Month</Button>
+              <Button variant="ghost" size="sm" className="h-7 rounded-md px-4">
+                Day
+              </Button>
+              <Button variant="ghost" size="sm" className="h-7 rounded-md px-4">
+                Week
+              </Button>
+              <Button
+                variant="default"
+                size="sm"
+                className="h-7 rounded-md px-4 shadow-sm"
+              >
+                Month
+              </Button>
             </div>
-            <Button variant="outline" size="sm" className="h-9">All Category</Button>
-            <Button size="sm" className="h-9 bg-violet-600 hover:bg-violet-700 text-white px-6">
-              Add Schedule
+            <Button variant="outline" size="sm" className="h-9">
+              Export
             </Button>
           </div>
         </div>
 
-        <div className="rounded-xl  bg-transparent text-card-foreground  overflow-hidden">
-          <Calendar
-            onSelect={handleDateSelect}
-            cellRender={(current, info) =>
-              info.type === "date" ? dateCellRender(current) : info.originNode
-            }
-          />
-        </div>
+      {(isLoading || isRefetching )?(
+        <div className="w-full h-full">
+        <PageSkeleton />
+      </div>
+      ):<div className="rounded-xl bg-card/40 border overflow-hidden">
+        <Calendar
+          onSelect={handleDateSelect}
+          cellRender={(current, info) =>
+            info.type === "date" ? dateCellRender(current) : info.originNode
+          }
+        />
+      </div>}
 
         <style jsx global>{`
           .ant-picker-calendar-full .ant-picker-panel {
             background: transparent !important;
           }
-
-          /* CUSTOMIZE CELL VISIBILITY HERE */
           .ant-picker-calendar-date {
-            border-top: 1px dashed hsl(var(--border) / 0.6) !important;
-            border-inline-end: 1px solid hsl(var(--border) / 0.2) !important; /* Vertical lines */
+            border-top: 1px dashed hsl(var(--border) / 0.5) !important;
+            border-inline-end: 1px solid hsl(var(--border) / 0.15) !important;
             margin: 0 !important;
-            padding: 8px 4px !important;
-            height: auto !important;
-            min-height: 140px;
-            transition: all 0.2s;
-            
-            /* Lightly color the cell background for visibility */
-            background-color: hsl(var(--muted) / 0.3) !important; 
+            padding: 6px 4px !important;
+            min-height: 110px;
+            transition: background 0.2s;
           }
-
-          /* Different background for days not in the current month */
-          .ant-picker-cell-next-month .ant-picker-calendar-date,
-          .ant-picker-cell-prev-month .ant-picker-calendar-date {
-            background-color: hsl(var(--muted) / 0.6) !important;
-            opacity: 0.8;
-          }
-
           .ant-picker-calendar-date:hover {
-            background: hsl(var(--accent) / 0.8) !important;
+            background: hsl(var(--accent) / 0.4) !important;
           }
-
           .ant-picker-calendar-date-value {
             color: hsl(var(--muted-foreground)) !important;
             font-weight: 600;
             font-size: 13px;
           }
-
-          .ant-picker-cell-in-view.ant-picker-cell-today .ant-picker-calendar-date {
-             /* Highlight today's cell background if needed */
-             background-color: hsl(var(--primary) / 0.05) !important;
+          .ant-picker-cell-in-view.ant-picker-cell-today
+            .ant-picker-calendar-date-value {
+            color: hsl(var(--primary)) !important;
+            font-weight: 700;
           }
-
-          .ant-picker-cell-in-view.ant-picker-cell-today .ant-picker-calendar-date-value {
-             color: hsl(var(--primary)) !important;
-          }
-
-          .ant-picker-calendar-full .ant-picker-cell::before {
-            border: none !important;
-          }
-
-          /* Adjust header (Sun, Mon, Tue...) background */
           .ant-picker-calendar-full .ant-picker-content th {
-            padding: 12px 0 !important;
-            background-color: hsl(var(--muted) / 0.5);
+            background: hsl(var(--muted) / 0.6);
             color: hsl(var(--muted-foreground));
+            font-size: 11px;
             font-weight: 600;
             text-transform: uppercase;
-            font-size: 11px;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.4px;
+            padding: 10px 0 !important;
           }
         `}</style>
       </div>
     </ConfigProvider>
-  )
+  );
+};
+
+export default BigCalender;
+
+interface UpdateDialogProps {
+  roomTypeId: string | null;
+  date: Dayjs;
+  currentData?: RoomCalendarData;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSuccess?: () => void;
+  refatch:()=>void;
 }
 
-export default BigCalender
+function UpdateCalendarOverrideDialog({
+  refatch,
+  
+  roomTypeId,
+  date,
+  currentData,
+  open,
+  onOpenChange,
+  onSuccess,
+}: UpdateDialogProps) {
+  const [price, setPrice] = useState<number | "">(currentData?.price ?? "");
+  const [blocked, setBlocked] = useState<number | "">(
+    currentData?.blockedRooms ?? "",
+  );
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  const dateStr = date.format("YYYY-MM-DD");
+  const formattedDate = format(date.toDate(), "PPP"); 
+
+  const handleUpdate = async () => {
+    if (!roomTypeId) {
+      toast.error("No room type selected");
+      return;
+    }
+    if (price === "" || isNaN(Number(price))) {
+      toast.error("Please enter a valid price");
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const payload = {
+        date: dateStr,
+        blockedRooms: Number(blocked) || 0,
+        price: Number(price),
+      };
+
+      const res = await updateCalenderData(roomTypeId, payload);
+      refatch();
+      toast.success("Calendar updated");
+      onOpenChange(false);
+      onSuccess?.();
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err?.response?.data?.message || "Update failed");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!roomTypeId) return;
+    // if (!confirm("Remove override for this date?")) return;
+
+    setDeleting(true);
+    try {
+      const res = deleteCalenderData(roomTypeId, {
+       date: dateStr,
+        blockedRooms: Number(blocked) || 0,
+        price: Number(price),
+      });
+      toast.success("Override removed");
+      onOpenChange(false);
+      refatch()
+      onSuccess?.();
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err?.response?.data?.message || "Delete failed");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Override for {formattedDate}</DialogTitle>
+          <DialogDescription>
+            Set custom price and/or block rooms for this date only.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="grid gap-5 py-4">
+          <div className="grid gap-2">
+            <Label htmlFor="price">Price (₹)</Label>
+            <Input
+              id="price"
+              type="number"
+              value={price}
+              onChange={(e) =>
+                setPrice(e.target.value === "" ? "" : Number(e.target.value))
+              }
+              placeholder="e.g. 12000"
+              min={0}
+            />
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="blocked">Blocked Rooms</Label>
+            <Input
+              id="blocked"
+              type="number"
+              value={blocked}
+              onChange={(e) =>
+                setBlocked(e.target.value === "" ? "" : Number(e.target.value))
+              }
+              placeholder="e.g. 2"
+              min={0}
+            />
+            <p className="text-xs text-muted-foreground">
+              Setting blocked rooms reduces availability immediately.
+            </p>
+          </div>
+        </div>
+
+        <DialogFooter className="gap-2 sm:gap-0">
+          {currentData && (
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={handleDelete}
+              disabled={deleting || saving}
+              className="gap-1.5"
+            >
+              <Trash2 className="h-4 w-4" />
+              {deleting ? "Removing..." : "Remove Override"}
+            </Button>
+          )}
+
+          <div className="flex-1" />
+
+          <DialogClose asChild>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={saving || deleting}
+            >
+              Cancel
+            </Button>
+          </DialogClose>
+
+          <Button
+            onClick={handleUpdate}
+            disabled={saving || deleting}
+            className="min-w-24 bg-violet-600 hover:bg-violet-700"
+          >
+            {saving ? "Saving..." : "Update"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}

@@ -35,10 +35,13 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar"
 import LOGO from "./logo/logo"
 import { NavProjects } from "./navprojects"
 import { BookOpen } from "lucide-react"
+import { usePathname, useRouter } from "next/navigation"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 export const data = {
   user: {
@@ -80,46 +83,61 @@ export const data = {
       icon: IconMessage, 
     },
     {
-      title: "Financials",
-      url: "/financials",          
-      icon: IconDatabase,
-      items: [
-        {
-          title: "Invoice",
-          url: "/financials/invoice",
-        },
-        {
-          title: "Expense",
-          url: "/financials/expense",
-        },
-      ],
+      title: "Invoice",
+      url: "/invoice",
+      icon: IconDatabase, 
     },
+    // {
+    //   title: "Financials",
+    //   url: "/financials",          
+    //   icon: IconDatabase,
+    //   items: [
+    //     {
+    //       title: "Invoice",
+    //       url: "/financials/invoice",
+    //     },
+    //     {
+    //       title: "Expense",
+    //       url: "/financials/expense",
+    //     },
+    //   ],
+    // },
   ],
 }
 
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const router = useRouter()
+  const pathname = usePathname();
+  const { isMobile, setOpenMobile } = useSidebar();
+  
+
+  React.useEffect(() => {
+
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+  }, [pathname, isMobile, setOpenMobile]);
+
   return (
-    <Sidebar collapsible="offcanvas" {...props}  >
+    <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton
-              asChild
-              className="data-[slot=sidebar-menu-button]:!p-1.5"
-            >
+            <SidebarMenuButton asChild className="p-1.5">
               <LOGO />
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
-      <SidebarContent >
+      
+      <SidebarContent>
         <NavMain items={data.navMain} />
-        
       </SidebarContent>
+      
       <SidebarFooter>
         <NavUser />
       </SidebarFooter>
     </Sidebar>
-  )
+  );
 }

@@ -34,10 +34,12 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { useGetInvoices } from "./query";
+import { MessageModal } from "../rooms/_components/full-frame";
+import { PageSkeleton } from "../rooms/_components/details.skeleton";
+import { Spinner } from "@/components/ui/spinner";
+import { IconRefresh } from "@tabler/icons-react";
 
-// ────────────────────────────────────────────────
-// Type & Mock Data
-// ────────────────────────────────────────────────
 
 export type Booking = {
   guestName: string;
@@ -48,36 +50,146 @@ export type Booking = {
   amount: number;
   status: "Paid" | "Unpaid" | "Partial" | "Cancelled";
 };
-
+type ResponseBooking = {
+  bookingReference: string;
+  guestName: string;
+  room: string;
+  pricePerNight: number;
+  nights: number;
+  totalAmount: number;
+  paymentStatus: "paid" | "pending" | "failed";
+};
 const mockBookings: Booking[] = [
-  { guestName: "Angus Copper", bookingId: "LG-B00108", room: "Deluxe 101", pricePerNight: 150, duration: 3, amount: 450, status: "Paid" },
-  { guestName: "Catherine Lopp", bookingId: "LG-B00109", room: "Standard 202", pricePerNight: 100, duration: 2, amount: 200, status: "Unpaid" },
-  { guestName: "Edgar Irving", bookingId: "LG-B00110", room: "Suite 303", pricePerNight: 250, duration: 5, amount: 1250, status: "Paid" },
-  { guestName: "Gertrude Bale", bookingId: "LG-B00111", room: "Standard 204", pricePerNight: 100, duration: 1, amount: 100, status: "Unpaid" },
-  { guestName: "Ice B. Holand", bookingId: "LG-B00112", room: "Deluxe 105", pricePerNight: 150, duration: 5, amount: 750, status: "Paid" },
-  { guestName: "Sarah Johnson", bookingId: "LG-B00113", room: "Standard 305", pricePerNight: 100, duration: 2, amount: 200, status: "Paid" },
-  { guestName: "Kevin Lee", bookingId: "LG-B00114", room: "Suite 306", pricePerNight: 250, duration: 3, amount: 750, status: "Unpaid" },
-  { guestName: "Laura Martin", bookingId: "LG-B00115", room: "Deluxe 107", pricePerNight: 150, duration: 1, amount: 150, status: "Paid" },
-  { guestName: "Robert King", bookingId: "LG-B00116", room: "Standard 208", pricePerNight: 100, duration: 2, amount: 200, status: "Unpaid" },
-  { guestName: "Olivia White", bookingId: "LG-B00117", room: "Suite 310", pricePerNight: 250, duration: 5, amount: 1250, status: "Paid" },
-  { guestName: "Catherine Lopp", bookingId: "LG-B00118", room: "Deluxe 110", pricePerNight: 150, duration: 1, amount: 150, status: "Paid" },
-  { guestName: "Catherine Lopp", bookingId: "LG-B00119", room: "Standard 307", pricePerNight: 100, duration: 3, amount: 300, status: "Unpaid" },
+  {
+    guestName: "Angus Copper",
+    bookingId: "LG-B00108",
+    room: "Deluxe 101",
+    pricePerNight: 150,
+    duration: 3,
+    amount: 450,
+    status: "Paid",
+  },
+  {
+    guestName: "Catherine Lopp",
+    bookingId: "LG-B00109",
+    room: "Standard 202",
+    pricePerNight: 100,
+    duration: 2,
+    amount: 200,
+    status: "Unpaid",
+  },
+  {
+    guestName: "Edgar Irving",
+    bookingId: "LG-B00110",
+    room: "Suite 303",
+    pricePerNight: 250,
+    duration: 5,
+    amount: 1250,
+    status: "Paid",
+  },
+  {
+    guestName: "Gertrude Bale",
+    bookingId: "LG-B00111",
+    room: "Standard 204",
+    pricePerNight: 100,
+    duration: 1,
+    amount: 100,
+    status: "Unpaid",
+  },
+  {
+    guestName: "Ice B. Holand",
+    bookingId: "LG-B00112",
+    room: "Deluxe 105",
+    pricePerNight: 150,
+    duration: 5,
+    amount: 750,
+    status: "Paid",
+  },
+  {
+    guestName: "Sarah Johnson",
+    bookingId: "LG-B00113",
+    room: "Standard 305",
+    pricePerNight: 100,
+    duration: 2,
+    amount: 200,
+    status: "Paid",
+  },
+  {
+    guestName: "Kevin Lee",
+    bookingId: "LG-B00114",
+    room: "Suite 306",
+    pricePerNight: 250,
+    duration: 3,
+    amount: 750,
+    status: "Unpaid",
+  },
+  {
+    guestName: "Laura Martin",
+    bookingId: "LG-B00115",
+    room: "Deluxe 107",
+    pricePerNight: 150,
+    duration: 1,
+    amount: 150,
+    status: "Paid",
+  },
+  {
+    guestName: "Robert King",
+    bookingId: "LG-B00116",
+    room: "Standard 208",
+    pricePerNight: 100,
+    duration: 2,
+    amount: 200,
+    status: "Unpaid",
+  },
+  {
+    guestName: "Olivia White",
+    bookingId: "LG-B00117",
+    room: "Suite 310",
+    pricePerNight: 250,
+    duration: 5,
+    amount: 1250,
+    status: "Paid",
+  },
+  {
+    guestName: "Catherine Lopp",
+    bookingId: "LG-B00118",
+    room: "Deluxe 110",
+    pricePerNight: 150,
+    duration: 1,
+    amount: 150,
+    status: "Paid",
+  },
+  {
+    guestName: "Catherine Lopp",
+    bookingId: "LG-B00119",
+    room: "Standard 307",
+    pricePerNight: 100,
+    duration: 3,
+    amount: 300,
+    status: "Unpaid",
+  },
   // ... more records
 ];
 
-// ────────────────────────────────────────────────
-// Status Badge
-// ────────────────────────────────────────────────
 
 const StatusBadge = React.memo(({ status }: { status: string }) => {
-  const variants: Record<string, { variant: "default" | "secondary" | "destructive" | "outline"; label: string }> = {
-    Paid:    { variant: "default", label: "Paid" },
-    Unpaid:  { variant: "destructive", label: "Unpaid" },
+  const variants: Record<
+    string,
+    {
+      variant: "default" | "secondary" | "destructive" | "outline";
+      label: string;
+    }
+  > = {
+    Paid: { variant: "default", label: "Paid" },
+    Unpaid: { variant: "destructive", label: "Unpaid" },
     Partial: { variant: "secondary", label: "Partial" },
     Cancelled: { variant: "outline", label: "Cancelled" },
   };
 
-  const style = variants[status] ?? { variant: "outline" as const, label: status };
+  const style = variants[status] ?? {
+    variant: "outline" as const,
+    label: status,
+  };
 
   return (
     <Badge variant={style.variant} className="min-w-[70px] justify-center">
@@ -86,9 +198,6 @@ const StatusBadge = React.memo(({ status }: { status: string }) => {
   );
 });
 
-// ────────────────────────────────────────────────
-// Columns
-// ────────────────────────────────────────────────
 
 export const columns: ColumnDef<Booking>[] = [
   {
@@ -133,7 +242,7 @@ export const columns: ColumnDef<Booking>[] = [
     ),
     cell: ({ row }) => {
       const price = parseFloat(row.getValue("pricePerNight"));
-      return <div className="text-right">${price}</div>;
+      return <div className="text-center">${price}</div>;
     },
   },
   {
@@ -149,7 +258,11 @@ export const columns: ColumnDef<Booking>[] = [
     ),
     cell: ({ row }) => {
       const nights = row.getValue("duration") as number;
-      return <div>{nights} night{nights !== 1 ? "s" : ""}</div>;
+      return (
+        <div>
+          {nights} night{nights !== 1 ? "s" : ""}
+        </div>
+      );
     },
   },
   {
@@ -166,7 +279,7 @@ export const columns: ColumnDef<Booking>[] = [
     ),
     cell: ({ row }) => {
       const amount = parseFloat(row.getValue("amount"));
-      return <div className="text-right font-medium">${amount}</div>;
+      return <div className="text-center font-medium">${amount}</div>;
     },
   },
   {
@@ -194,20 +307,37 @@ export const columns: ColumnDef<Booking>[] = [
   },
 ];
 
-// ────────────────────────────────────────────────
-// Main Component
-// ────────────────────────────────────────────────
-
 export function InvoiceTbale() {
   const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
+    [],
+  );
+  const [columnVisibility, setColumnVisibility] =
+    React.useState<VisibilityState>({});
+  const { data, isLoading , refetch, isRefetching} = useGetInvoices();
+  const t = data?.data;
 
-  // Replace with real query: const { data: bookings = [] } = useBookingsQuery();
+const rawdata: Booking[] = React.useMemo(() => {
+    return t?.data?.map((item: ResponseBooking) => ({
+      guestName: item.guestName,
+      bookingId: item.bookingReference,
+      room: item.room,
+      pricePerNight: item.pricePerNight,
+      duration: item.nights,
+      amount: item.nights * item.pricePerNight,
+      status: item.paymentStatus === "paid" ? "Paid"
+             : item.paymentStatus === "pending" ? "Unpaid"
+             : item.paymentStatus === "failed" ? "Cancelled"
+             : "Unpaid",  
+    }));
+  }, [t]);
+  const tableData = rawdata || [] as Booking[] ;
+  
+
   const bookings = mockBookings;
 
   const table = useReactTable({
-    data: bookings,
+    data: tableData ,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -229,7 +359,10 @@ export function InvoiceTbale() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-col sm:flex-row gap-3">
           {/* Date Range Picker - placeholder */}
-          <Button variant="outline" className="justify-start text-left font-normal w-[240px]">
+          <Button
+            variant="outline"
+            className="justify-start text-left font-normal w-[240px]"
+          >
             5 June - 16 June 2028
           </Button>
 
@@ -238,12 +371,23 @@ export function InvoiceTbale() {
             All Status
             <span className="ml-2">▼</span>
           </Button>
+          <Button variant="outline" className="w-[120px] justify-between" onClick={() => refetch()} disabled={isRefetching}>
+           { isRefetching ? <IconRefresh className="animate-spin " /> : <IconRefresh />}
+            {
+              isRefetching ? "Refreshing..." : "Refresh"
+            }
+            
+          </Button>
         </div>
 
         <Input
           placeholder="Search name, room, etc..."
-          value={(table.getColumn("guestName")?.getFilterValue() as string) ?? ""}
-          onChange={(e) => table.getColumn("guestName")?.setFilterValue(e.target.value)}
+          value={
+            (table.getColumn("guestName")?.getFilterValue() as string) ?? ""
+          }
+          onChange={(e) =>
+            table.getColumn("guestName")?.setFilterValue(e.target.value)
+          }
           className="max-w-sm"
         />
 
@@ -279,27 +423,36 @@ export function InvoiceTbale() {
                   <TableHead key={header.id}>
                     {header.isPlaceholder
                       ? null
-                      : flexRender(header.column.columnDef.header, header.getContext())}
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext(),
+                        )}
                   </TableHead>
                 ))}
               </TableRow>
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length ? (
+            {table?.getRowModel().rows?.length && !isLoading ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow key={row.id} className="hover:bg-muted/60">
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
                     </TableCell>
                   ))}
                 </TableRow>
               ))
             ) : (
-              <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
-                  No bookings found.
+              <TableRow className="w-full">
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-[300px] text-center w-full flex justify-center items-center"
+                >
+                  {(isLoading || isRefetching)?<Spinner/>:"No bookings found."}
                 </TableCell>
               </TableRow>
             )}
@@ -310,10 +463,15 @@ export function InvoiceTbale() {
       {/* Pagination */}
       <div className="flex items-center justify-between text-sm text-muted-foreground">
         <div>
-          Showing {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1}–
+          Showing{" "}
+          {table.getState().pagination.pageIndex *
+            table.getState().pagination.pageSize +
+            1}
+          –
           {Math.min(
-            (table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize,
-            table.getFilteredRowModel().rows.length
+            (table.getState().pagination.pageIndex + 1) *
+              table.getState().pagination.pageSize,
+            table.getFilteredRowModel().rows.length,
           )}{" "}
           of {table.getFilteredRowModel().rows.length}
         </div>

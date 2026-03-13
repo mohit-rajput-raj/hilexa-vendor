@@ -3,6 +3,7 @@ import ChatDashboard from './_components/messages'
 import { ErrorBoundary } from 'react-error-boundary'
 import { MessageModal } from '../rooms/_components/full-frame'
 import { PageSkeleton } from '../rooms/_components/details.skeleton'
+import { Verify } from '@/app/(auth)/authMiddleware'
 
 type Props = {}
 

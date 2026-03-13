@@ -2,6 +2,7 @@ import React, { Suspense } from 'react'
 import {MessageModal, RoomListing} from './_components/full-frame'
 import { PageSkeleton } from './_components/details.skeleton'
 import { ErrorBoundary } from 'react-error-boundary'
+import { Verify } from '@/app/(auth)/authMiddleware'
 
 type Props = {}
 

@@ -283,10 +283,11 @@ export function RoomListing() {
 
 import { Building2 } from "lucide-react";
 import EditRoomForm from "./edit-room-form";
+import { cn } from "@/lib/utils";
 
-export const MessageModal = ({title,description}: {title: string, description: string}) => {
+export const MessageModal = ({title,description, className}: {title: string,className?:string, description: string}) => {
   return (
-    <div className="flex items-center justify-center min-full ">
+    <div className={cn("flex items-center justify-center min-full ", className)}>
       <Card className="w-full  shadow-lg rounded-2xl border-dashed border-2">
         <CardContent className="flex flex-col items-center justify-center py-12 text-center space-y-4">
           <Building2 className="w-12 h-12 text-muted-foreground" />

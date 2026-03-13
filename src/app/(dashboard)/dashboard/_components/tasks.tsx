@@ -30,13 +30,9 @@ export interface ITask {
 }
 export function RatingAndTasks() {
     const [checking , setChecking ] = useState(false);
-  const { data: t, isLoading , refetch , isRefetching } = useGetTasks();
+  const { data: t, isLoading:taskLoading , refetch , isRefetching } = useGetTasks();
   const tasks: ITask[] = t?.data || [];
-  if(isLoading || isRefetching){
-    return (
-        <div className="flex flex-col gap-5 md:min-h-screen"><PageSkeleton className="md:h-100"/><PageSkeleton className="md:h-100"/></div>
-    )
-  }
+ 
   const handleSubmitCheck = async ({
     id, status
   }:{
@@ -123,10 +119,8 @@ export function RatingAndTasks() {
         </CardHeader>
 
         <CardContent className="relative space-y-6">
-          {isLoading ? (
-            <p className="text-sm text-slate-400 text-center">
-              Loading tasks...
-            </p>
+          {taskLoading ? (
+            <PageSkeleton/>
           ) : tasks.length === 0 ? (
             <MessageModal title="Add tasks" description="adding notes can be usefull to remember tasks"/>
           ) : (

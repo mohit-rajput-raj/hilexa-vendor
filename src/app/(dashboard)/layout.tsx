@@ -1,3 +1,4 @@
+'use client'
 import { AppSidebar } from "@/components/app-sidebar"
 import { ChartAreaInteractive } from "@/components/chart-area-interactive"
 import { DataTable } from "@/components/data-table"
@@ -11,17 +12,32 @@ import {
 
 import data from "./data.json"
 import { CompactFooter } from "@/components/footer/compactfooter"
-import { Suspense } from "react"
+import { Suspense, useEffect, useState } from "react"
+import { PageSkeleton } from "./rooms/_components/details.skeleton"
+import { useRouter } from "next/navigation"
+import LogoLoader from "@/components/loaders/logoloader"
 // import { Footer } from "@/components/footer/footer"
 
 export default function Page(
     { children }: { children: React.ReactNode }
 ) {
+    const router = useRouter();
+  const [ok, setOk] = useState(false);
+
+  useEffect(() => {
+    if (!localStorage.getItem("accessToken")) {
+      router.replace("/login");
+    } else {
+      setOk(true);
+    }
+  }, [router]);
+
+  if (!ok) return <LogoLoader />; // or full-screen loader
     return (
         <SidebarProvider
             style={
                 {
-                    "--sidebar-width": "calc(var(--spacing) * 52)",
+                    "--sidebar-width": "calc(var(--spacing) * 42)",
                     "--header-height": "calc(var(--spacing) * 19)",
                 } as React.CSSProperties
             }
