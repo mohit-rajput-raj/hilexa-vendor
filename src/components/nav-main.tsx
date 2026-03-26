@@ -71,8 +71,8 @@ export function NavMain({ items }: NavMainProps) {
                     isActive={isActive}
                     className={`
                       justify-between transition-colors
-                      data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground
-                      hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground
+                      data-[active=true]:bg-primary data-[active=true]:text-sidebar-accent-foreground
+                      hover:bg-primary/70 hover:text-sidebar-accent-foreground
                       [&>svg]:text-muted-foreground group-data-[state=open]/collapsible:[&>svg:last-child]:text-foreground
                     `}
                     onClick={(e) => {

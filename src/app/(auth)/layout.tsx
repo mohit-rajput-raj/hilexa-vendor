@@ -1,9 +1,17 @@
+import { AuthContextProvider } from '@/context/auth/AuthContextProvider'
+import { ProcessContextProvider } from '@/context/auth/ProcessContextProvider'
 import React from 'react'
 
 
-const layout = ({children}:{children: React.ReactNode}) => {
+const layout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div>{children}</div>
+    <AuthContextProvider>
+      <ProcessContextProvider>
+
+
+        <div>{children}</div>
+      </ProcessContextProvider>
+    </AuthContextProvider>
   )
 }
 

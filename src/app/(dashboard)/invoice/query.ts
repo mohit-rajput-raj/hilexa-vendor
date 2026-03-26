@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getInvoices } from "./invoice.service";
+import { downloadInvoice, getInvoices } from "./invoice.service";
 
 export const useGetInvoices = () => {
   return useQuery({
@@ -10,5 +10,16 @@ export const useGetInvoices = () => {
     refetchOnMount: false,
     refetchOnReconnect: true,
     retry: false, // optional
+  });
+};
+export const usedownloadInvoice = (id:string) => {
+  return useQuery({
+    queryKey: ["downloadInvoice", id],
+    queryFn: ()=>downloadInvoice(id),
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: true,
+    retry: false, // optional
+    enabled:!!id
   });
 };

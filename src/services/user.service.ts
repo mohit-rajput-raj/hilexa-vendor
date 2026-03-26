@@ -3,13 +3,12 @@ import { axiosApi } from "@/lib/axios";
 export const currentUser = async () => {
   const token = localStorage.getItem("accessToken");
 
-
   if (!token) {
     throw new Error("No access token found");
   }
 
   try {
-    const res = await axiosApi.get("/users/me", {
+    const res = await axiosApi.get("/vendors/me", {
       headers: {
         Authorization: `Bearer ${token}`,
       },

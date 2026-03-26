@@ -34,15 +34,17 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { useGetInvoices } from "./query";
+import { usedownloadInvoice, useGetInvoices } from "./query";
 import { MessageModal } from "../rooms/_components/full-frame";
 import { PageSkeleton } from "../rooms/_components/details.skeleton";
 import { Spinner } from "@/components/ui/spinner";
 import { IconRefresh } from "@tabler/icons-react";
+import { downloadInvoice } from "./invoice.service";
 
 
 export type Booking = {
   guestName: string;
+  downloadId:string;
   bookingId: string;
   room: string;
   pricePerNight: number;
@@ -51,6 +53,7 @@ export type Booking = {
   status: "Paid" | "Unpaid" | "Partial" | "Cancelled";
 };
 type ResponseBooking = {
+  bookingId:string,
   bookingReference: string;
   guestName: string;
   room: string;
@@ -59,117 +62,6 @@ type ResponseBooking = {
   totalAmount: number;
   paymentStatus: "paid" | "pending" | "failed";
 };
-const mockBookings: Booking[] = [
-  {
-    guestName: "Angus Copper",
-    bookingId: "LG-B00108",
-    room: "Deluxe 101",
-    pricePerNight: 150,
-    duration: 3,
-    amount: 450,
-    status: "Paid",
-  },
-  {
-    guestName: "Catherine Lopp",
-    bookingId: "LG-B00109",
-    room: "Standard 202",
-    pricePerNight: 100,
-    duration: 2,
-    amount: 200,
-    status: "Unpaid",
-  },
-  {
-    guestName: "Edgar Irving",
-    bookingId: "LG-B00110",
-    room: "Suite 303",
-    pricePerNight: 250,
-    duration: 5,
-    amount: 1250,
-    status: "Paid",
-  },
-  {
-    guestName: "Gertrude Bale",
-    bookingId: "LG-B00111",
-    room: "Standard 204",
-    pricePerNight: 100,
-    duration: 1,
-    amount: 100,
-    status: "Unpaid",
-  },
-  {
-    guestName: "Ice B. Holand",
-    bookingId: "LG-B00112",
-    room: "Deluxe 105",
-    pricePerNight: 150,
-    duration: 5,
-    amount: 750,
-    status: "Paid",
-  },
-  {
-    guestName: "Sarah Johnson",
-    bookingId: "LG-B00113",
-    room: "Standard 305",
-    pricePerNight: 100,
-    duration: 2,
-    amount: 200,
-    status: "Paid",
-  },
-  {
-    guestName: "Kevin Lee",
-    bookingId: "LG-B00114",
-    room: "Suite 306",
-    pricePerNight: 250,
-    duration: 3,
-    amount: 750,
-    status: "Unpaid",
-  },
-  {
-    guestName: "Laura Martin",
-    bookingId: "LG-B00115",
-    room: "Deluxe 107",
-    pricePerNight: 150,
-    duration: 1,
-    amount: 150,
-    status: "Paid",
-  },
-  {
-    guestName: "Robert King",
-    bookingId: "LG-B00116",
-    room: "Standard 208",
-    pricePerNight: 100,
-    duration: 2,
-    amount: 200,
-    status: "Unpaid",
-  },
-  {
-    guestName: "Olivia White",
-    bookingId: "LG-B00117",
-    room: "Suite 310",
-    pricePerNight: 250,
-    duration: 5,
-    amount: 1250,
-    status: "Paid",
-  },
-  {
-    guestName: "Catherine Lopp",
-    bookingId: "LG-B00118",
-    room: "Deluxe 110",
-    pricePerNight: 150,
-    duration: 1,
-    amount: 150,
-    status: "Paid",
-  },
-  {
-    guestName: "Catherine Lopp",
-    bookingId: "LG-B00119",
-    room: "Standard 307",
-    pricePerNight: 100,
-    duration: 3,
-    amount: 300,
-    status: "Unpaid",
-  },
-  // ... more records
-];
 
 
 const StatusBadge = React.memo(({ status }: { status: string }) => {
@@ -282,28 +174,38 @@ export const columns: ColumnDef<Booking>[] = [
       return <div className="text-center font-medium">${amount}</div>;
     },
   },
-  {
-    accessorKey: "status",
-    header: "Status",
-    cell: ({ row }) => (
-      <div className="flex justify-center">
-        <StatusBadge status={row.getValue("status")} />
-      </div>
-    ),
-  },
-  {
+  // {
+  //   accessorKey: "status",
+  //   header: "Status",
+  //   cell: ({ row }) => (
+  //     <div className="flex justify-center">
+  //       <StatusBadge status={row.getValue("status")} />
+  //     </div>
+  //   ),
+  // },
+ {
     id: "actions",
     header: () => <div className="text-right pr-4">Action</div>,
-    cell: () => (
-      <div className="flex items-center justify-end gap-2 pr-2">
-        <Button variant="ghost" size="icon" className="h-8 w-8">
-          <Eye className="h-4 w-4" />
-        </Button>
-        <Button variant="ghost" size="icon" className="h-8 w-8">
-          <Download className="h-4 w-4" />
-        </Button>
-      </div>
-    ),
+    cell: ({ row, table }) => {
+      const booking = row.original;
+      // We retrieve the custom function from table meta
+      const meta = table.options.meta as {
+        onDownload: (id: string) => void;
+      };
+
+      return (
+        <div className="flex items-center justify-end gap-2 pr-2">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-8 w-8"
+            onClick={() => meta?.onDownload(booking.downloadId)}
+          >
+            <Download className="h-4 w-4" />
+          </Button>
+        </div>
+      );
+    },
   },
 ];
 
@@ -321,6 +223,7 @@ const rawdata: Booking[] = React.useMemo(() => {
     return t?.data?.map((item: ResponseBooking) => ({
       guestName: item.guestName,
       bookingId: item.bookingReference,
+      downloadId:item.bookingId,
       room: item.room,
       pricePerNight: item.pricePerNight,
       duration: item.nights,
@@ -332,9 +235,18 @@ const rawdata: Booking[] = React.useMemo(() => {
     }));
   }, [t]);
   const tableData = rawdata || [] as Booking[] ;
+
+  // 1. The Download Logic
+  const handleDownload = (id: string) => {
+    try {
+      const res = downloadInvoice(id)
+      
+    } catch (error) {
+      console.error("Download failed", error);
+    }
+  };
   
 
-  const bookings = mockBookings;
 
   const table = useReactTable({
     data: tableData ,
@@ -350,6 +262,9 @@ const rawdata: Booking[] = React.useMemo(() => {
       sorting,
       columnFilters,
       columnVisibility,
+    },
+    meta: {
+      onDownload: handleDownload,
     },
   });
 

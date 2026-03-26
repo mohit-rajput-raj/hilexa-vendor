@@ -27,6 +27,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { Input } from "@/components/ui/input";
+import dayjs from "dayjs";
 
 interface RoomCalendarData {
   date: string; // "2026-03-01"
@@ -54,7 +55,7 @@ const BigCalender: React.FC<{ selected: string | null }> = ({ selected }) => {
     setHotelId(id);
   }, []);
 
-  const { data, isLoading, isRefetching , refetch } = useGetCalender(selected || "");
+  const { data, isLoading, isRefetching, refetch } = useGetCalender(selected || "");
 
   // ← Your real data (example structure you shared)
   const calendarData: RoomCalendarData[] = data?.data?.calendar || [];
@@ -66,7 +67,7 @@ const BigCalender: React.FC<{ selected: string | null }> = ({ selected }) => {
   const getStatusForDate = (dateStr: string): RoomCalendarData | undefined => {
     return calendarData.find((item) => item.date === dateStr);
   };
-  
+
 
   const dateCellRender = (value: Dayjs) => {
     const dateStr = value.format("YYYY-MM-DD");
@@ -81,7 +82,7 @@ const BigCalender: React.FC<{ selected: string | null }> = ({ selected }) => {
     }
 
     const occupancy = dayData.bookedRooms + dayData.blockedRooms;
-    const availabilityText = `abailable ${dayData.availableRooms}`;
+    const availabilityText = `Available: ${dayData.availableRooms}`;
     let status: CalendarEvent["category"] = "Available";
     let bgClass =
       "bg-emerald-500/10 border-l-4 border-emerald-500 text-emerald-700 dark:text-emerald-300";
@@ -119,10 +120,38 @@ const BigCalender: React.FC<{ selected: string | null }> = ({ selected }) => {
     );
   };
 
-  const handleDateSelect = (date: Dayjs) => {
-    setSelectedDate(date);
-    setOpen(true);
-  };
+const disabledDate = (current: Dayjs) => {
+  const today = dayjs().startOf('day');
+  const startOfMonth = dayjs().startOf('month');
+  const endOfMonth = dayjs().endOf('month');
+
+  // Disable if before today OR if NOT in the current month
+  const isBeforeToday = current && current < today;
+  const isNotInCurrentMonth = current < startOfMonth || current > endOfMonth;
+
+  return isBeforeToday || isNotInCurrentMonth;
+};
+
+// 2. Updated selection logic
+const handleDateSelect = (date: Dayjs) => {
+  const today = dayjs().startOf('day');
+  const startOfMonth = dayjs().startOf('month');
+  const endOfMonth = dayjs().endOf('month');
+
+  // BLOCK: Before Today
+  if (date.isBefore(today)) {
+    return; // Do nothing
+  }
+
+  // BLOCK: Outside current month
+  if (date.isBefore(startOfMonth) || date.isAfter(endOfMonth)) {
+    return; // Do nothing
+  }
+
+  // If passed checks, open dialog
+  setSelectedDate(date);
+  setOpen(true);
+};
 
   if (!mounted) return null;
   // if (isLoading || isRefetching) {
@@ -147,13 +176,13 @@ const BigCalender: React.FC<{ selected: string | null }> = ({ selected }) => {
     >
       {selectedDate && (
         <UpdateCalendarOverrideDialog
-        refatch={()=>refetch()}
+          refatch={() => refetch()}
           roomTypeId={selected}
           date={selectedDate}
           currentData={getStatusForDate(selectedDate.format("YYYY-MM-DD"))}
           open={open}
           onOpenChange={setOpen}
-          onSuccess={() => {}}
+          onSuccess={() => { }}
         />
       )}
 
@@ -162,7 +191,7 @@ const BigCalender: React.FC<{ selected: string | null }> = ({ selected }) => {
           <h2 className="text-2xl font-bold tracking-tight">
             Room Availability
           </h2>
-          <div className="flex items-center gap-2">
+          {/* <div className="flex items-center gap-2">
             <div className="flex bg-muted p-1 rounded-lg">
               <Button variant="ghost" size="sm" className="h-7 rounded-md px-4">
                 Day
@@ -181,57 +210,75 @@ const BigCalender: React.FC<{ selected: string | null }> = ({ selected }) => {
             <Button variant="outline" size="sm" className="h-9">
               Export
             </Button>
-          </div>
+          </div> */}
         </div>
 
-      {(isLoading || isRefetching )?(
-        <div className="w-full h-full">
-        <PageSkeleton />
-      </div>
-      ):<div className="rounded-xl bg-card/40 border overflow-hidden">
-        <Calendar
-          onSelect={handleDateSelect}
-          cellRender={(current, info) =>
-            info.type === "date" ? dateCellRender(current) : info.originNode
-          }
-        />
-      </div>}
-
+        {(isLoading || isRefetching) ? (
+          <div className="w-full h-full">
+            <PageSkeleton />
+          </div>
+        ) : <div className="rounded-xl bg-card/40 border overflow-hidden">
+          <Calendar
+            onSelect={handleDateSelect}
+            cellRender={(current, info) =>
+              info.type === "date" ? dateCellRender(current) : info.originNode
+            }
+          />
+        </div>}
         <style jsx global>{`
-          .ant-picker-calendar-full .ant-picker-panel {
-            background: transparent !important;
-          }
-          .ant-picker-calendar-date {
-            border-top: 1px dashed hsl(var(--border) / 0.5) !important;
-            border-inline-end: 1px solid hsl(var(--border) / 0.15) !important;
-            margin: 0 !important;
-            padding: 6px 4px !important;
-            min-height: 110px;
-            transition: background 0.2s;
-          }
-          .ant-picker-calendar-date:hover {
-            background: hsl(var(--accent) / 0.4) !important;
-          }
-          .ant-picker-calendar-date-value {
-            color: hsl(var(--muted-foreground)) !important;
-            font-weight: 600;
-            font-size: 13px;
-          }
-          .ant-picker-cell-in-view.ant-picker-cell-today
-            .ant-picker-calendar-date-value {
-            color: hsl(var(--primary)) !important;
-            font-weight: 700;
-          }
-          .ant-picker-calendar-full .ant-picker-content th {
-            background: hsl(var(--muted) / 0.6);
-            color: hsl(var(--muted-foreground));
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.4px;
-            padding: 10px 0 !important;
-          }
-        `}</style>
+  .ant-picker-calendar-full .ant-picker-panel {
+    background: transparent !important;
+  }
+  .ant-picker-calendar-date {
+    border-top: 1px solid hsl(var(--border) / 0.3) !important;
+    border-inline-end: 1px solid hsl(var(--border) / 0.3) !important;
+    margin: 0 !important;
+    padding: 0 !important; /* Removed padding to let the inner div fill the space */
+    min-height: 110px;
+    transition: none !important; /* Remove transition for instant feel */
+  }
+
+  /* --- FIX: STOPS HIGHLIGHT ON HOVER --- */
+  .ant-picker-calendar-date:hover {
+    background: transparent !important;
+  }
+
+  /* --- FIX: STOPS HIGHLIGHT WHEN SELECTED --- */
+  .ant-picker-cell-selected .ant-picker-calendar-date {
+    background: transparent !important;
+  }
+
+  /* --- FIX: STOPS GLOBAL ROW HIGHLIGHT ON HOVER --- */
+  .ant-picker-panel tbody tr:hover td {
+    background: transparent !important;
+  }
+
+  /* Improved Header/Weekday styling */
+  .ant-picker-calendar-full .ant-picker-content th {
+    background: hsl(var(--muted) / 0.4);
+    color: hsl(var(--muted-foreground));
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 12px 0 !important;
+    border-bottom: 1px solid hsl(var(--border));
+  }
+
+  .ant-picker-calendar-date-value {
+    color: hsl(var(--muted-foreground)) !important;
+    font-weight: 600;
+    font-size: 12px;
+    padding: 8px 8px 4px 8px !important;
+  }
+
+  .ant-picker-cell-in-view.ant-picker-cell-today .ant-picker-calendar-date-value {
+    color: hsl(var(--primary)) !important;
+    font-weight: 800;
+  }
+`}</style>
+
+      
       </div>
     </ConfigProvider>
   );
@@ -246,12 +293,12 @@ interface UpdateDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess?: () => void;
-  refatch:()=>void;
+  refatch: () => void;
 }
 
 function UpdateCalendarOverrideDialog({
   refatch,
-  
+
   roomTypeId,
   date,
   currentData,
@@ -267,7 +314,7 @@ function UpdateCalendarOverrideDialog({
   const [deleting, setDeleting] = useState(false);
 
   const dateStr = date.format("YYYY-MM-DD");
-  const formattedDate = format(date.toDate(), "PPP"); 
+  const formattedDate = format(date.toDate(), "PPP");
 
   const handleUpdate = async () => {
     if (!roomTypeId) {
@@ -284,7 +331,7 @@ function UpdateCalendarOverrideDialog({
       const payload = {
         date: dateStr,
         blockedRooms: Number(blocked) || 0,
-        price: Number(price),
+        priceOverride: Number(price),
       };
 
       const res = await updateCalenderData(roomTypeId, payload);
@@ -307,7 +354,7 @@ function UpdateCalendarOverrideDialog({
     setDeleting(true);
     try {
       const res = deleteCalenderData(roomTypeId, {
-       date: dateStr,
+        date: dateStr,
         blockedRooms: Number(blocked) || 0,
         price: Number(price),
       });

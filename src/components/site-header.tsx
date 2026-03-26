@@ -13,7 +13,6 @@ import { Suspense } from "react"
 export function SiteHeader() {
   const pathname = usePathname()
   
-  // console.log(data);
   
 
   return (
@@ -28,13 +27,13 @@ export function SiteHeader() {
         <div className="ml-auto flex items-center gap-2">
             <NavUser />
 
-          <Button variant={"ghost"}>
+          {/* <Button variant={"ghost"}>
             <IconSettings />
           </Button>
           <Button variant={"ghost"} >
             <IconNotification />
 
-          </Button>
+          </Button> */}
           <ModeToggle/>
         </div>
       </div>

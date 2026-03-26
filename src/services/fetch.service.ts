@@ -3,12 +3,12 @@ import { NewRoomProps } from "@/app/(dashboard)/rooms/new/zod-schema";
 import { axiosApi } from "@/lib/axios";
 
 export const addRooms = async (data: NewRoomProps) => {
-  const res = await axiosApi.post("/room-types", data);
+  const res = await axiosApi.post("/room-types/auto", data);
   return res.data;
 };
-export const getDashboard = async () => {
+export const getDashboard = async (params?: { reservationDays?: number }) => {
   try {
-    const res = await axiosApi.get(`/vendors/dashboard`);
+    const res = await axiosApi.get(`/vendors/dashboard`, { params });
 
     return res.data;
   } catch (error) {
@@ -45,6 +45,10 @@ export const createTsk = async (data: {
   return res.data;
 };
 
+export const ReservedUsersDetails =async (id:string)=>{
+  const res = await axiosApi(`/vendors/bookings/${id}`)
+  return res.data;
+}
 export const updateTask = async ({
   data,
   id,
@@ -73,12 +77,11 @@ export const getReservation = async () => {
     return [];
   }
 };
-// export const getRoom
-export const getRooms = async () => {
+export const getRooms = async (hotelId: string) => {
   try {
     const res = await axiosApi.get("/vendors/room-types", {
       params: {
-        hotelId: "699c08fa14dd3a2de88ddea1",
+        hotelId: hotelId,
       },
     });
     return res.data;
@@ -92,11 +95,11 @@ export const getRooms = async () => {
     };
   }
 };
-export const getRoomById = async (id: string) => {
+export const getRoomById = async (id: string, hotelId: string) => {
   try {
     const res = await axiosApi.get(`/vendors/room-types/${id}`, {
       params: {
-        hotelId: "699c08fa14dd3a2de88ddea1",
+        hotelId: hotelId,
       },
     });
     return res.data;

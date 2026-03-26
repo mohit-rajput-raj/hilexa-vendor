@@ -43,8 +43,8 @@ const platformData = [
   { name: 'Others', value: 2, color: '#F0FDF4' },
 ];
 
-export function HotelDashboard() {
-  const { data: s, isLoading } = useGetDashboard();
+export function HotelDashboard({ reservationDays }: { reservationDays: number | undefined }) {
+  const { data: s, isLoading } = useGetDashboard(reservationDays);
 
   if (isLoading) return <PageSkeleton />;
 
@@ -54,20 +54,20 @@ export function HotelDashboard() {
     name: v.month,
     revenue: v.revenue
   }));
-   const reservationData = dash?.reservationChart?.map((v: ReservationChartItem) => ({
+  const reservationData = dash?.reservationChart?.map((v: ReservationChartItem) => ({
     day: v.date,
     booked: v.booked,
     canceled: v.cancelled
   }));
-  
 
-  const total = (dash.roomSummary.occupiedRooms || 0) + (dash.roomSummary.availableRooms || 0) + 87 + 13;
+
+  const total = (dash.roomSummary.totalRooms || 0)
 
   const segments = [
     { label: "Occupied", value: dash.roomSummary.occupiedRooms, color: "bg-emerald-100" },
-    { label: "Reserved", value: 87, color: "bg-yellow-100" },
-    { label: "Available", value: dash.roomSummary.availableRooms, color: "bg-violet-500" },
-    { label: "Not Ready", value: 13, color: "bg-lime-200" },
+    { label: "AvailableRooms", value:dash.roomSummary.availableRooms, color: "bg-yellow-100" },
+    // { label: "TotalRooms", value: dash.roomSummary.totalRooms, color: "bg-violet-500" },
+    { label: "Not Ready", value: 0, color: "bg-lime-200" },
   ];
 
   return (

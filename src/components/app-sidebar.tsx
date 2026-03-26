@@ -66,11 +66,11 @@ export const data = {
       url: "/rooms",
       icon: IconHome,
     },
-    {
-      title: "Messages",
-      url: "/messages",
-      icon: IconMessage,
-    },
+    // {
+    //   title: "Messages",
+    //   url: "/messages",
+    //   icon: IconMessage,
+    // },
     
     {
       title: "Calendar",

@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import * as React from "react";
 import { Badge } from "@/components/ui/badge";
@@ -89,6 +89,8 @@ export function RoomListing() {
   const [sortBy, setSortBy] = React.useState("popular");
   const [typeFilter, setTypeFilter] = React.useState("all");
   const [roomselected, setRoomSelected] = React.useState<string | null>(null);
+  const { data: user } = useCurrentUser();
+  const hotelId = user?.data?.approvedData?.hotelId || "";
   const [editmode, setEditMode] = React.useState<{
     id: string;
     mode: boolean;
@@ -96,16 +98,21 @@ export function RoomListing() {
     id: "",
     mode: false,
   });
-  
+
   const router = useRouter();
   const { data, isLoading } = useAllRooms();
   const [loading, setLoading] = React.useState(false);
-
-
+const [search , setSearch] = React.useState("");
   const rosms = (data?.data as Room[]) || ([] as Room[]);
-  
-   const filteredAndSortedRooms = React.useMemo(() => {
+
+  const filteredAndSortedRooms = React.useMemo(() => {
     let rooms = [...rosms];
+    if (search.trim() !== "") {
+    rooms = rooms.filter((room) =>
+      room.name.toLowerCase().includes(search.toLowerCase())
+    );
+  }
+    
     if (typeFilter !== "all") {
       rooms = rooms.filter((room) =>
         room.name.toLowerCase().includes(typeFilter.toLowerCase()),
@@ -118,8 +125,7 @@ export function RoomListing() {
       rooms.sort((a, b) => b.price - a.price);
     }
     return rooms;
-  }, [rosms, sortBy, typeFilter]);
-
+  }, [rosms, sortBy, typeFilter, search]);
 
   React.useEffect(() => {
     setTimeout(() => {
@@ -128,15 +134,27 @@ export function RoomListing() {
     setLoading(false);
   }, [roomselected]);
   if (!data) {
-    return <div><PageSkeleton/></div>;
+    return (
+      <div>
+        <PageSkeleton />
+      </div>
+    );
   }
- if (editmode.mode && editmode.id) {
-    return <EditRoomForm setEditMode={setEditMode} hotelId={"sdf"} roomId={editmode.id} />;
+  if (editmode.mode && editmode.id) {
+    return (
+      <EditRoomForm
+        setEditMode={setEditMode}
+        hotelId={"sdf"}
+        roomId={editmode.id}
+      />
+    );
   }
   return (
     <div className="flex min-h-screen flex-col gap-6 ">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <Input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
           placeholder="Search room type, number, etc."
           className="max-w-sm"
         />
@@ -157,7 +175,7 @@ export function RoomListing() {
 
           <div className="flex items-center gap-2">
             <Label>Type:</Label>
-            <Select  value={typeFilter} onValueChange={setTypeFilter}>
+            <Select value={typeFilter} onValueChange={setTypeFilter}>
               <SelectTrigger className="w-[140px]">
                 <SelectValue placeholder="All" />
               </SelectTrigger>
@@ -184,80 +202,186 @@ export function RoomListing() {
         <div className="space-y-5">
           {filteredAndSortedRooms.map((room) => (
             <Card
+              key={room.id}
               onClick={() => {
                 setRoomSelected(room.id);
-                setEditMode({
-                  id: room.id,
-                  mode: false,
-                });
+                setEditMode({ id: room.id, mode: false });
               }}
-              key={room.id}
-              className="overflow-hidden shadow-sm bg-background md:h-56 py-1 hover:scale-101  duration-500 ease-in-out transition-transform cursor-pointer"
+              className="group overflow-hidden border-muted/60 bg-background hover:shadow-md transition-all duration-300 cursor-pointer md:px-3"
             >
-              <div className="md:flex">
-                {/* Smaller image column */}
-                <div className="relative md:w-40 lg:w-46 xl:w-64 md:shrink-0 px-1">
+              <div className="flex flex-col md:flex-row md:h-52">
+                {/* Image Section */}
+                <div className="relative w-full md:w-64 lg:w-72 shrink-0 overflow-hidden  rounded-2xl">
                   <img
                     src={room.image}
                     alt={room.name}
-                    className="h-30 rounded-2xl w-full object-cover md:h-full"
+                    className="h-48 w-full object-cover md:h-full transition-transform duration-500 group-hover:scale-105 "
                   />
+
+                  {/* Status Badge with Glass effect */}
                   <Badge
                     variant={
                       room.status === "Available" ? "default" : "destructive"
                     }
-                    className="absolute right-3 top-3 px-3 py-1 font-medium"
+                    className="absolute left-3 top-3 backdrop-blur-md bg-opacity-90 shadow-sm border-none"
                   >
+                    <span className="relative flex h-2 w-2 mr-2">
+                      <span
+                        className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${room.status === "Available" ? "bg-green-400" : "bg-red-400"}`}
+                      ></span>
+                      <span
+                        className={`relative inline-flex rounded-full h-2 w-2 ${room.status === "Available" ? "bg-green-500" : "bg-red-500"}`}
+                      ></span>
+                    </span>
                     {room.status}
                   </Badge>
                 </div>
 
-                {/* Content - tighter padding */}
-                <div className="flex flex-1 flex-col p-4 md:p-5">
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <CardTitle className="text-lg font-semibold">
+                {/* Content Section */}
+                <div className="flex flex-1 flex-col p-5">
+                  <div className="flex justify-between items-start gap-2">
+                    <div className="space-y-1">
+                      <CardTitle className="text-xl font-bold tracking-tight group-hover:text-primary transition-colors">
                         {room.name}
                       </CardTitle>
-                      <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-                        <div className="flex items-center gap-1">
-                          <Maximize2 className="h-3.5 w-3.5" />
-                          {room.roomSizeSqm} m²
+
+                      {/* Icons/Amenities row */}
+                      <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-1.5">
+                          <Maximize2 className="h-4 w-4 text-primary/70" />
+                          <span>{room.roomSizeSqm} m²</span>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <BedDouble className="h-3.5 w-3.5" />
-                          {room.beds[0].quantity}
+                        <div className="flex items-center gap-1.5">
+                          <BedDouble className="h-4 w-4 text-primary/70" />
+                          <span>{room.beds[0].quantity} Bed</span>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <Users className="h-3.5 w-3.5" />
-                          {room.capacity.adults + room.capacity.children} guests
+                        <div className="flex items-center gap-1.5">
+                          <Users className="h-4 w-4 text-primary/70" />
+                          <span>
+                            {room.capacity?.adults + room.capacity?.children}{" "}
+                            Max
+                          </span>
                         </div>
                       </div>
                     </div>
-                    <div className="text-right shrink-0">
-                      <div className="text-xl font-bold">${room.price}</div>
-                      <div className="text-xs text-muted-foreground">
-                        /night
-                      </div>
+
+                    {/* Pricing */}
+                    <div className="text-right">
+                      <p className="text-2xl font-black text-primary">
+                        ${room.price}
+                      </p>
+                      <p className="text-[10px] uppercase tracking-tighter text-muted-foreground font-bold">
+                        Per Night
+                      </p>
                     </div>
                   </div>
 
-                  <CardDescription className="mt-2 line-clamp-2 text-sm">
-                    {room.name}
-                  </CardDescription>
+                  {/* Description */}
+                  <p className="mt-3 text-sm text-muted-foreground line-clamp-2 leading-relaxed italic">
+                    "Luxury suite with premium amenities and scenic views."
+                  </p>
 
-                  <div className="mt-4 flex items-center justify-between text-xs">
-                    <div className="text-muted-foreground">
-                      Availability: {room.availableRooms}/{room.totalRooms}{" "}
-                      Rooms
+                  {/* Footer / Meta */}
+                  <div className="mt-auto pt-4 flex items-center justify-between border-t border-dashed">
+                    <div className="flex flex-col">
+                      <span className="text-[10px] uppercase font-bold text-muted-foreground">
+                        Availability
+                      </span>
+                      <span className="text-sm font-semibold text-foreground">
+                        {room.availableRooms} / {room.totalRooms}{" "}
+                        <span className="font-normal text-muted-foreground">
+                          Units left
+                        </span>
+                      </span>
                     </div>
-                    <Button variant="ghost" size="sm" className=" px-3">
-                      View Details <ChevronRight className="ml-1 h-3.5 w-3.5" />
+
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="rounded-full group-hover:bg-primary group-hover:text-primary-foreground transition-all"
+                    >
+                      Details
+                      <ChevronRight className="ml-1 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                     </Button>
                   </div>
                 </div>
               </div>
             </Card>
+            // <Card
+            //   onClick={() => {
+            //     setRoomSelected(room.id);
+            //     setEditMode({
+            //       id: room.id,
+            //       mode: false,
+            //     });
+            //   }}
+            //   key={room.id}
+            //   className="overflow-hidden shadow-sm bg-background md:h-56 py-1 hover:scale-101  duration-500 ease-in-out transition-transform cursor-pointer"
+            // >
+            //   <div className="md:flex">
+            //     {/* Smaller image column */}
+            //     <div className="relative md:w-40 lg:w-46 xl:w-64 md:shrink-0 px-1">
+            //       <img
+            //         src={room.image}
+            //         alt={room.name}
+            //         className="h-30 rounded-2xl w-full object-cover md:h-full"
+            //       />
+            //       <Badge
+            //         variant={
+            //           room.status === "Available" ? "default" : "destructive"
+            //         }
+            //         className="absolute right-3 top-3 px-3 py-1 font-medium"
+            //       >
+            //         {room.status}
+            //       </Badge>
+            //     </div>
+
+            //     {/* Content - tighter padding */}
+            //     <div className="flex flex-1 flex-col p-4 md:p-5">
+            //       <div className="flex items-start justify-between gap-4">
+            //         <div>
+            //           <CardTitle className="text-lg font-semibold">
+            //             {room.name}
+            //           </CardTitle>
+            //           <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+            //             <div className="flex items-center gap-1">
+            //               <Maximize2 className="h-3.5 w-3.5" />
+            //               {room.roomSizeSqm} m²
+            //             </div>
+            //             <div className="flex items-center gap-1">
+            //               <BedDouble className="h-3.5 w-3.5" />
+            //               {room.beds[0].quantity}
+            //             </div>
+            //             <div className="flex items-center gap-1">
+            //               <Users className="h-3.5 w-3.5" />
+            //               {room.capacity?.adults + room.capacity?.children} guests
+            //             </div>
+            //           </div>
+            //         </div>
+            //         <div className="text-right shrink-0">
+            //           <div className="text-xl font-bold">${room.price}</div>
+            //           <div className="text-xs text-muted-foreground">
+            //             /night
+            //           </div>
+            //         </div>
+            //       </div>
+
+            //       <CardDescription className="mt-2 line-clamp-2 text-sm">
+            //         {room.name}
+            //       </CardDescription>
+
+            //       <div className="mt-4 flex items-center justify-between text-xs">
+            //         <div className="text-muted-foreground">
+            //           Availability: {room.availableRooms}/{room.totalRooms}{" "}
+            //           Rooms
+            //         </div>
+            //         <Button variant="ghost" size="sm" className=" px-3">
+            //           View Details <ChevronRight className="ml-1 h-3.5 w-3.5" />
+            //         </Button>
+            //       </div>
+            //     </div>
+            //   </div>
+            // </Card>
           ))}
         </div>
 
@@ -273,7 +397,12 @@ export function RoomListing() {
               />
             )
           ) : (
-            <MessageModal title="Select Hotel" description="Please select a hotel" />
+            <MessageModal
+              title="Select Hotel"
+              description="Please select a hotel"
+              imgsrc="/select.png"
+              classImgDiv="h-50 w-50"
+            />
           )}
         </div>
       </div>
@@ -284,21 +413,39 @@ export function RoomListing() {
 import { Building2 } from "lucide-react";
 import EditRoomForm from "./edit-room-form";
 import { cn } from "@/lib/utils";
+import { useCurrentUser } from "@/services/queryes";
 
-export const MessageModal = ({title,description, className}: {title: string,className?:string, description: string}) => {
+export const MessageModal = ({
+  title,
+  description,
+  className,
+  imgsrc,
+  classImgDiv,
+}: {
+  classImgDiv?: string;
+  title: string;
+  className?: string;
+  description: string;
+  imgsrc?: string;
+}) => {
   return (
-    <div className={cn("flex items-center justify-center min-full ", className)}>
+    <div className={cn("flex justify-center  ", className)}>
       <Card className="w-full  shadow-lg rounded-2xl border-dashed border-2">
         <CardContent className="flex flex-col items-center justify-center py-12 text-center space-y-4">
           <Building2 className="w-12 h-12 text-muted-foreground" />
 
-          <h2 className="text-2xl font-semibold tracking-tight">
-            {title}
-          </h2>
+          <h2 className="text-2xl font-semibold tracking-tight">{title}</h2>
 
-          <p className="text-sm text-muted-foreground">
-            {description}
-          </p>
+          <p className="text-sm text-muted-foreground">{description}</p>
+          {imgsrc && (
+            <div className={cn("md:w-100 md:h-100 w-50 h-50", classImgDiv)}>
+              <img
+                src={imgsrc || "/nothing"}
+                alt={title}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
@@ -352,6 +499,8 @@ const RoomSideBarDetails = ({
     React.SetStateAction<{ id: string; mode: boolean }>
   >;
 }) => {
+  const { data: user } = useCurrentUser();
+
   const { data, isLoading, error } = useRoomById(editmode.id);
 
   if (isLoading) {
@@ -371,12 +520,12 @@ const RoomSideBarDetails = ({
         <h1 className="text-sm font-medium text-muted-foreground">
           Room Details
         </h1>
-        <Button
+        {/* <Button
           size="sm"
           onClick={() => setEditMode({ id: editmode.id, mode: true })}
         >
           Edit Room
-        </Button>
+        </Button> */}
       </div>
 
       <CardHeader className="pb-4">
@@ -432,7 +581,7 @@ const RoomSideBarDetails = ({
           </p>
           <p>
             <span className="font-medium">Capacity:</span>{" "}
-            {room.capacity.adults} Adults, {room.capacity.children} Children
+            {room.capacity?.adults} Adults, {room.capacity?.children} Children
           </p>
           <p>
             <span className="font-medium">Room Size:</span> {room.roomSizeSqm}{" "}
