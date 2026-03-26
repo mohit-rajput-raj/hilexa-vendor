@@ -1,25 +1,69 @@
 "use client"
 
+export interface BookingResponse {
+  data: BookingDetail;
+}
 
+export interface BookingDetail {
+  bookingReference: string;
+  status: "confirmed" | "cancelled" | "pending"; // Added union for type safety
+  checkIn: string;  // ISO Date string
+  checkOut: string; // ISO Date string
+  nights: number;
+  guests: Guests;
+  specialRequest: string | null;
+  primaryGuest: PrimaryGuest;
+  room: RoomInfo;
+  priceSummary: PriceSummary;
+}
 
-export default function DashboardPage() {
+export interface Guests {
+  adults: number;
+  children: number;
+}
+
+export interface PrimaryGuest {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+}
+
+export interface RoomInfo {
+  roomType: string;
+  roomNumber: string;
+  image: string;
+}
+
+export interface PriceSummary {
+  pricePerNight: number;
+  taxAmount: number;
+  cleaningFee: number;
+  discountAmount: number;
+  totalAmount: number;
+  paymentStatus: "paid" | "pending" | "failed" | "refunded";
+}
+
+export default function DashboardPage({id}:{id:string}) {
+  const {data:d, isLoading} = useGetReservedUserData(id)
+  if(isLoading)return <PageSkeleton/>
+  const data=d  
+  
+  
   return (
     <div className="min-h-screen bg-muted/30 p-6">
       <div className="grid grid-cols-12 gap-6">
         
-        {/* Left */}
         <div className="col-span-12 lg:col-span-3">
-          <ProfileCard />
+          <ProfileCard data={data?.data}/>
         </div>
 
-        {/* Middle */}
         <div className="col-span-12 lg:col-span-6">
-          <BookingInfoCard />
+          <BookingInfoCard  data={data?.data}/>
         </div>
 
-        {/* Right */}
         <div className="col-span-12 lg:col-span-3">
-          <RoomInfoCard />
+          <RoomInfoCard  data={data?.data}/>
         </div>
       </div>
 
@@ -34,7 +78,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 
-export function ProfileCard() {
+export function ProfileCard({data}:{data:BookingDetail}) {
   return (
     <Card className="rounded-2xl">
       <CardHeader>
@@ -45,11 +89,13 @@ export function ProfileCard() {
 
         {/* Avatar */}
         <div className="flex items-center gap-4">
-          <div className="h-14 w-14 rounded-full bg-purple-500" />
+          <div className="h-20 w-20 rounded-full overflow-hidden ">
+            <img src={"/person.png"} alt="user" />
+          </div>
           <div>
-            <p className="font-semibold">Angus Copper</p>
+            <p className="font-semibold">{data.primaryGuest.firstName} {data.primaryGuest.lastName}</p>
             <p className="text-sm text-muted-foreground">
-              G011-987654321
+              {data.primaryGuest.phoneNumber}
             </p>
           </div>
         </div>
@@ -59,21 +105,21 @@ export function ProfileCard() {
         {/* Personal Info */}
         <div className="space-y-2 text-sm">
           <p><span className="font-medium">Date of Birth:</span> June 15, 1985</p>
-          <p><span className="font-medium">Gender:</span> Male</p>
-          <p><span className="font-medium">Nationality:</span> American</p>
+          {/* <p><span className="font-medium">Gender:</span> NA</p> */}
+          <p><span className="font-medium">Nationality:</span> Indian</p>
           <p><span className="font-medium">Passport No:</span> A12345678</p>
         </div>
 
-        <Separator />
+        {/* <Separator /> */}
 
         {/* Loyalty */}
-        <div className="space-y-3">
+        {/* <div className="space-y-3">
           <p className="font-medium">Loyalty Program</p>
           <Badge className="bg-purple-500">Platinum Member</Badge>
           <p className="text-sm text-muted-foreground">
             15,000 points • Elite Tier
           </p>
-        </div>
+        </div> */}
 
       </CardContent>
     </Card>
@@ -82,55 +128,86 @@ export function ProfileCard() {
 
 import { Button } from "@/components/ui/button"
 
-export function BookingInfoCard() {
+export function BookingInfoCard({ data }: { data: BookingDetail }) {
+  // 1. Create a reusable formatter
+  const formatDate = (dateString: string) => {
+    return new Intl.DateTimeFormat('en-IN', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    }).format(new Date(dateString));
+  };
+
+  // 2. Format the creation date (Booking time)
+  // Assuming checkIn or a separate 'createdAt' field exists
+  const bookingTime = new Date(data.checkIn).toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+
   return (
-    <Card className="rounded-2xl">
-      <CardHeader className="flex flex-row items-center justify-between">
+    <Card className="rounded-2xl shadow-sm border-muted">
+      <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-6">
         <div>
-          <Badge variant="secondary" className="mb-2">
-            Booking Confirmed
+          <Badge 
+            variant={data.status === 'confirmed' ? 'default' : 'secondary'} 
+            className="mb-2 capitalize"
+          >
+            {data.status}
           </Badge>
-          <CardTitle>Booking ID: LG-B00109</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            June 17, 2024 • 9:46 AM
+          <CardTitle className="text-xl">Booking ID: {data.bookingReference}</CardTitle>
+          <p className="text-sm text-muted-foreground mt-1">
+            {formatDate(data.checkIn)} • {bookingTime}
           </p>
         </div>
 
-        <div className="space-x-2">
-          <Button size="sm" variant="outline">Edit</Button>
-          <Button size="sm" variant="destructive">Cancel</Button>
+        <div className="flex items-center gap-2 text-sm font-medium">
+          <span className="text-muted-foreground">Payment:</span>
+          <span className={data.priceSummary.paymentStatus === 'paid' ? 'text-green-600' : 'text-orange-500'}>
+            {data.priceSummary.paymentStatus.toUpperCase()}
+          </span>
         </div>
       </CardHeader>
 
       <CardContent className="space-y-6">
-
         {/* Info Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
-          <Info label="Room Type" value="Deluxe" />
-          <Info label="Room Number" value="101" />
-          <Info label="Price" value="$150/night" />
-          <Info label="Guests" value="2 Adults" />
-          <Info label="Check In" value="June 19, 2024" />
-          <Info label="Check Out" value="June 22, 2024" />
-          <Info label="Duration" value="3 nights" />
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-y-6 gap-x-4 text-sm">
+          <Info label="Room Type" value={data.room.roomType} />
+          <Info label="Room Number" value={data.room.roomNumber || "Pending"} />
+          <Info 
+            label="Price" 
+            value={`₹${data.priceSummary.pricePerNight.toLocaleString('en-IN')}`} 
+          />
+          <Info 
+            label="Guests" 
+            value={`${data.guests.adults} Adults, ${data.guests.children} ${data.guests.children === 1 ? 'Child' : 'Children'}`} 
+          />
+          {/* FIXED DATES HERE */}
+          <Info label="Check In" value={formatDate(data.checkIn)} />
+          <Info label="Check Out" value={formatDate(data.checkOut)} />
+          <Info label="Duration" value={`${data.nights} Night${data.nights > 1 ? 's' : ''}`} />
         </div>
 
         <Separator />
 
         <div>
-          <p className="font-medium mb-2">Special Amenities</p>
-          <ul className="text-sm text-muted-foreground space-y-1">
-            <li>✓ Complimentary breakfast</li>
-            <li>✓ Free Wi-Fi</li>
-            <li>✓ Access to gym and pool</li>
-          </ul>
+          <p className="font-medium mb-3">Included Amenities</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <span className="text-green-500">✓</span> Complimentary breakfast
+            </div>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <span className="text-green-500">✓</span> Free High-speed Wi-Fi
+            </div>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <span className="text-green-500">✓</span> Access to gym and pool
+            </div>
+          </div>
         </div>
-
       </CardContent>
     </Card>
-  )
+  );
 }
-
 function Info({ label, value }: { label: string; value: string }) {
   return (
     <div>
@@ -143,7 +220,7 @@ function Info({ label, value }: { label: string; value: string }) {
 import Image from "next/image"
 
 
-export function RoomInfoCard() {
+export function RoomInfoCard({data}:{data:BookingDetail}) {
   return (
     <Card className="rounded-2xl overflow-hidden shadow-none bg-background border border-border ">
       <CardHeader>
@@ -153,7 +230,7 @@ export function RoomInfoCard() {
       <CardContent className="space-y-4">
         <div className="relative h-40 w-full rounded-xl overflow-hidden">
           <Image
-            src="/room.jpg"
+            src={data.room.image || "/room.png"}
             alt="Room"
             fill
             className="object-cover"
@@ -168,21 +245,31 @@ export function RoomInfoCard() {
 
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
-            <span>Room & Offer</span>
-            <span>$450.00</span>
+            <span>Price Per Night</span>
+            <span><Rupee/>{data.priceSummary.pricePerNight}</span>
           </div>
           <div className="flex justify-between">
-            <span>VAT</span>
-            <span>$36.00</span>
+            <span>Tax Amount</span>
+            <span><Rupee/>{data.priceSummary.taxAmount}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Cleaning Fee</span>
+            <span><Rupee/>{data.priceSummary.cleaningFee}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Discount Amount</span>
+            <span><Rupee/>{data.priceSummary.discountAmount}</span>
           </div>
           <div className="flex justify-between font-semibold">
             <span>Total</span>
-            <span>$535.50</span>
+            <span><Rupee/>{data.priceSummary.totalAmount}</span>
           </div>
         </div>
 
-        <Badge className="bg-purple-500">Paid</Badge>
-
+        <div className="flex gap-3 px-2">
+          <Badge className="bg-purple-500">Paid</Badge>
+        <Badge className="bg-red-500">{data.priceSummary.paymentStatus}</Badge>
+        </div>
       </CardContent>
     </Card>
   )
@@ -196,6 +283,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { useGetReservedUserData } from "@/services/tanstack.query"
+import { PageSkeleton } from "../../rooms/_components/details.skeleton";
+import Rupee from "@/components/rupee";
 
 
 export function BookingHistoryTable() {

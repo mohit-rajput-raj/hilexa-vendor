@@ -17,39 +17,70 @@ interface User {
 }
 
 interface AuthStates {
+  currStep: number | null;
+  setCurrStep: (step: number) => void;
+  steeperStep: number | null;
+  setSteeperStep: (step: number) => void;
   loginBoxOpen: boolean;
   setLoginBoxOpen: (open: boolean) => void;
   signupBoxOpen: boolean;
   setSignupBoxOpen: (open: boolean) => void;
+  ///////
+  vendorEmail: string;
+  setVendorEmail: (email: string) => void;
+  businessName: string;
+  setBusinessName: (name: string) => void;
+  hotelId: string;
+  setHotelId: (id: string) => void;
+  //////////
   isLoging: boolean;
   isSiging: boolean;
   currUser: User | null;
-  hotel:{
-    _id:string,
-    name:string,
-  }
-  userLogin: (
-    data: Login_signup_Data,
-  ) => Promise<{ success: boolean; message: string }>;
+  hotel: {
+    _id: string;
+    name: string;
+  };
+  draft: boolean;
+  userLogin: (data: Login_signup_Data) => Promise<{
+    success: boolean;
+    message: string;
+    currentStep?: number;
+    status: string;
+  }>;
   userSignup: (
     data: Login_signup_Data,
   ) => Promise<{ success: boolean; message: string }>;
-  verifyOTP: (data: {
-    email: string;
-    otp: string;
-  }) => Promise<{ success: boolean; message: string }>;
+  verifyOTP: (data: { email: string; otp: string }) => Promise<{
+    success: boolean;
+    message: string;
+    currentStep: number;
+    status: string;
+  }>;
   resendOTP: (email: string) => Promise<{ success: boolean; message: string }>;
   updateUser: (
     data: Partial<User>,
   ) => Promise<{ success: boolean; message: string }>;
-  uploadFile: (
-    file: File,
-  ) => Promise<{ success: boolean; url?: string; message: string, public_id?: string, resource_type?: string }>;
+  uploadFile: (file: File) => Promise<{
+    success: boolean;
+    url?: string;
+    message: string;
+    public_id?: string;
+    resource_type?: string;
+  }>;
 }
 
 interface Login_signup_Data {
   email: string;
   password?: string;
+  role?: string;
+  firstName?: string;
+  lastName?: string;
+  phoneNumber?: string;
+  gender?: string;
+  dob?: string;
+  country?: string;
+  address?: string;
+  zipcode?: string;
 }
 
 export const useAuthStore = create<AuthStates>()((set) => ({
@@ -60,31 +91,62 @@ export const useAuthStore = create<AuthStates>()((set) => ({
   isLoging: false,
   isSiging: false,
   currUser: null,
-  hotel:{
-    _id:"",
-    name:"",
+  currStep: 2,
+  steeperStep: 2,
+  setSteeperStep: (s: number) => set({ steeperStep: s }),
+  setCurrStep: (step: number) => set({ currStep: step }),
+  vendorEmail: "",
+  setVendorEmail: (email: string) => set({ vendorEmail: email }),
+  businessName: "",
+  setBusinessName: (name: string) => set({ businessName: name }),
+  hotelId: "",
+  setHotelId: (id: string) => set({ hotelId: id }),
+  hotel: {
+    _id: "",
+    name: "",
   },
+  draft: true,
 
   userLogin: async (data: Login_signup_Data) => {
+
     set({ isLoging: true });
     try {
       const res = await axiosApi.post("/auth/login", data);
+
       if (res.data.success) {
         set({ currUser: res.data.data.user });
         const token = res.data.accessToken;
-        const hotel = res.data.data.hotel;
-        set({ hotel });
+        const status = res.data.data.vendor.status;
         localStorage.setItem("accessToken", token);
-        localStorage.setItem("hotelId" , hotel._id)
+        localStorage.setItem("status", status);
+        set({
+          draft:
+            res.data.data.vendor.status === "draft" ||
+            res.data.data.vendor.status === "pending" ||
+            res.data.data.vendor.status === "rejected",
+        });
+        set({ currStep: res.data.data.vendor.currentStep || 1 });
 
-        return { success: true, message: res.data.message };
+        return {
+          success: true,
+          message: res.data.message,
+          currentStep: res.data.data.vendor.currentStep || 1,
+          status: res.data.data.vendor.status,
+        };
       }
-      return { success: false, message: res.data.message || "Login failed" };
+      return {
+        success: false,
+        message: res.data.message || "Login failed",
+        currentStep: 0,
+        status: "draft",
+      };
     } catch (error) {
       const err = error as { response?: { data?: { message?: string } } };
       return {
         success: false,
         message: err.response?.data?.message || "Login failed",
+        currentStep: 0,
+        status: "draft",
       };
     } finally {
       set({ isLoging: false });
@@ -93,6 +155,7 @@ export const useAuthStore = create<AuthStates>()((set) => ({
 
   userSignup: async (data: Login_signup_Data) => {
     set({ isSiging: true });
+
     try {
       const res = await axiosApi.post("/auth/signup", data);
       return { success: res.data.success, message: res.data.message };
@@ -113,17 +176,28 @@ export const useAuthStore = create<AuthStates>()((set) => ({
       const res = await axiosApi.post("/auth/verify-otp", data);
       if (res.data.success) {
         set({ currUser: res.data.data.user });
-        return { success: true, message: res.data.message };
+        localStorage.setItem("accessToken", res.data.accessToken);
+        localStorage.setItem("status", res.data.data.vendor.status);
+        return {
+          success: true,
+          message: res.data.message,
+          currentStep: res.data.data.vendor?.currentStep || 0,
+          status: res.data.data.vendor.status,
+        };
       }
       return {
         success: false,
         message: res.data.message || "Verification failed",
+        currentStep: res.data.data.vendor.currentStep,
+        status: res.data.data.vendor.status,
       };
     } catch (error) {
       const err = error as { response?: { data?: { message?: string } } };
       return {
         success: false,
         message: err.response?.data?.message || "Verification failed",
+        currentStep: 0,
+        status: "draft",
       };
     } finally {
       set({ isSiging: false });
@@ -179,9 +253,8 @@ export const useAuthStore = create<AuthStates>()((set) => ({
           success: true,
           url: res.data.files[0].url,
           message: "File uploaded successfully",
-           public_id: res.data.files[0].public_id as string,
-            resource_type:res.data.files[0].resource_type as  string
-
+          public_id: res.data.files[0].public_id as string,
+          resource_type: res.data.files[0].resource_type as string,
         };
       }
       return {

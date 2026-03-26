@@ -20,7 +20,7 @@ const page = (props: Props) => {
       }
     >
       <Suspense fallback={<PageSkeleton />}>
-        <div className="flex gap-4 w-full">
+        <div className="flex gap-4 w-full h-screen overflow-scroll">
           <MainCalenderFrame/>
         </div>
       </Suspense>

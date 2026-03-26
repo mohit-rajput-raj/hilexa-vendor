@@ -5,18 +5,28 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useCurrentUser } from "@/services/queryes";
 import { PageSkeleton } from "./(dashboard)/rooms/_components/details.skeleton";
+import { useAuthStore } from "@/stores/auth.store";
 
 export default function Home() {
-  const {data , isLoading} = useCurrentUser();
+  const { data, isLoading } = useCurrentUser();
+
   const router = useRouter()
+  const { setCurrStep } = useAuthStore()
+  // const { draft } = useAuthStore()
+  // const draft = ;
   useEffect(() => {
-    if(data){
-      router.replace("/dashboard")
-    }else if(localStorage.getItem("accessToken") === null){
+    if (data) {
+      if (localStorage.getItem("status") === "draft") {
+        setCurrStep(data?.data?.vendor.currentStep)
+        router.replace("/signup/process")
+      } else {
+        router.replace("/dashboard")
+      }
+    } else if (localStorage.getItem("accessToken") === null) {
       router.replace("/login")
     }
   }, [data])
-  if(isLoading)return <PageSkeleton />
+  if (isLoading) return <PageSkeleton />
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
       <SpinnerCustom /> loading

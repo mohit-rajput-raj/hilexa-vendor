@@ -1,6 +1,6 @@
 'use client'
 
-import { IconTrendingDown, IconTrendingUp, IconCurrencyDollar, IconUsers, IconArrowUpRight, IconDoorEnter, IconDoorExit } from "@tabler/icons-react"
+import { IconTrendingDown, IconTrendingUp, IconCurrencyDollar, IconUsers, IconArrowUpRight, IconDoorEnter, IconDoorExit, IconCurrencyRupee } from "@tabler/icons-react"
 
 import { Badge } from "@/components/ui/badge"
 import {
@@ -19,12 +19,12 @@ const statCardsConfig = [
     key: "totalRevenue" as const,
     title: "Total Revenue",
     description: "Revenue this month",
-    icon: IconCurrencyDollar,
+    icon: IconCurrencyRupee,
     trendPrefix: "+",               // can be made dynamic later
     trendValue: "12.5%",           // ← placeholder – replace with real comparison later
     trendComparedTo: "vs last month",
     trendIcon: IconTrendingUp,
-    valueFormatter: (val: number) => `$${val.toLocaleString()}`,
+    valueFormatter: (val: number) => `₹${val.toLocaleString()}`,
     badgeVariant: "default" as const,
   },
   {
@@ -76,11 +76,12 @@ const statCardsConfig = [
   badgeVariant?: "default" | "secondary" | "outline"
 }>
 
-interface SectionCardsProps {
+export interface SectionCardsProps {
   dash: DashboardData
+  isLoading?: boolean
 }
 
-export function SectionCards({ dash }: SectionCardsProps) {
+export function SectionCards({ dash, isLoading }: SectionCardsProps) {
   const stats = dash?.stats ?? {
     newBookings: 0,
     todayCheckIns: 0,
@@ -101,8 +102,8 @@ export function SectionCards({ dash }: SectionCardsProps) {
         const showTrend = card.trendIcon !== null
 
         return (
-          <Card 
-            key={card.key} 
+          <Card
+            key={card.key}
             className="
               bg-gradient-to-t from-primary/5 to-card 
               shadow-xs dark:bg-card
@@ -123,7 +124,7 @@ export function SectionCards({ dash }: SectionCardsProps) {
 
               {showTrend && (
                 <div className="mt-1 flex items-center gap-1.5 text-sm">
-                  <Badge 
+                  <Badge
                     variant={card.badgeVariant}
                     className={`
                       flex items-center gap-1 px-2 py-0.5

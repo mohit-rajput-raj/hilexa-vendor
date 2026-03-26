@@ -46,6 +46,26 @@ import {
 } from "lucide-react";
 
 import type { LucideIcon } from "lucide-react";
+export const hotelFeatures: Record<string, LucideIcon> = {
+  restaurant: Utensils,
+  bar: Martini,
+  room_service: Bell,
+  minibar: Refrigerator,
+  free_wifi: Wifi,
+  hearing_aid: Ear,
+  pool: Waves,
+  swimming_pool: Waves,
+  gym: Dumbbell,
+  fitness_center: Dumbbell,
+  spa: Sparkles,
+  wellness_center: Sparkles,
+  parking: Car,
+  free_parking: Car,
+  laundry: Shirt,
+  daily_housekeeping: Sparkles,
+  dry_cleaning: Shirt,
+  concierge: ConciergeBell,
+}
 
 export const amenityIconMap: Record<string, LucideIcon> = {
   // Food & Drink

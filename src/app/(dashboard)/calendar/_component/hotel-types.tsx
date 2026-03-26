@@ -40,10 +40,10 @@ const MainCalenderFrame = (props: Props) => {
           setSelected={(v) => setSelected(v)}
         />
       </div>
-        {selected ? (
+          {selected ? (
           <BigCalender selected={selected} />
         ) : (
-          <MessageModal className="w-full h-screen"  title="calender" description="select any roomtype" />
+          <MessageModal className="w-full min-h-screen"  title="calender" description="select any roomtype" imgsrc="/selectRoomType.png" />
         )}
     </>
   );
@@ -61,6 +61,7 @@ import {
 import { useGetRoomTypes } from "./querys";
 import { cn } from "@/lib/utils";
 import { PageSkeleton, SkeletonText } from "../../rooms/_components/details.skeleton";
+import { useCurrentUser } from "@/services/queryes";
 
 export function ItemGroupExample({
   selected,
@@ -70,8 +71,8 @@ export function ItemGroupExample({
   setSelected: (value: React.SetStateAction<string | null>) => void;
 }) {
   const [collapsed, setCollapsed] = useState(false);
-
-  const { data, isLoading } = useGetRoomTypes("699c08a0e0d8abe1ae241b10");
+  // const { data: user } = useCurrentUser();
+  const { data, isLoading } = useGetRoomTypes();
   const types = data?.data ?? ([] as hoteTypesPropos[]);
 
   const router = useRouter();
@@ -84,7 +85,7 @@ export function ItemGroupExample({
       )}
     >
       {/* Always-visible toggle header */}
-      <div className="flex items-center justify-start p-2 border-b bg-muted/40">
+      <div className="flex items-center justify-start p-2  bg-muted/40">
         
         <Button
           variant="ghost"
@@ -139,7 +140,7 @@ export function ItemGroupExample({
                   key={value._id}
                   variant={selected === value._id ? "outline" : "default"}
                   onClick={() => setSelected(value._id)}
-                  className="cursor-pointer"
+                  className={cn("cursor-pointer", selected === value._id ?"dark:bg-background/20 bg-gray-100":"")}
                 >
                   <ItemContent className="gap-0.5">
                     <ItemTitle className="text-sm">{value.name}</ItemTitle>
@@ -148,7 +149,7 @@ export function ItemGroupExample({
                       {value.discountPrice && `• Disc: ₹${value.discountPrice}`}
                     </ItemDescription>
                   </ItemContent>
-                  <ItemActions>
+                  {/* <ItemActions>
                     <Button
                       variant="ghost"
                       size="icon"
@@ -156,7 +157,7 @@ export function ItemGroupExample({
                     >
                       <PlusIcon className="h-4 w-4" />
                     </Button>
-                  </ItemActions>
+                  </ItemActions> */}
                 </Item>
               ))
             )}

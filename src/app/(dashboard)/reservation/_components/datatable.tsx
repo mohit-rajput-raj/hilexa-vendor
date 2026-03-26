@@ -43,6 +43,7 @@ import { useRouter } from "next/navigation";
 
 export type Status = "confirmed" | "pending" | "Confirmed" | "Pending" | null;
 export type Reservation = {
+  bookingId:string
   bookingReference: string;
   guestName: string;
   roomLabel: string;
@@ -73,26 +74,27 @@ const StatusBadge = React.memo(({ status }: { status: Status }) => {
 const ActionCell = React.memo(({ row }: { row: any }) => {
   const status = row.original.status;
   const { mutate: updateStatus, isPending: isUpdating } = useUpdateReservationStatus();
-
+ const router = useRouter()
   return (
     <div className="flex items-center gap-2">
-      <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400">
-        <Eye className="h-4 w-4" />
+      <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400" onClick={() => router.push(`/reservation/user/${row.original.bookingId}`)}>
+        <Eye className="h-4 w-4"  />
       </Button>
-      <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400">
+      
+      <OptionSelectionDialog id={row.original.bookingId} trigger={<Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400">
         <Pencil className="h-4 w-4" />
-      </Button>
+      </Button>}/>
 
       <Button
         variant="outline"
         size="sm"
         disabled={isUpdating}
-        onClick={() =>
-          updateStatus({
-            id: row.original.bookingReference,
-            newStatus: status === "Pending" ? "Confirmed" : "Pending",
-          })
-        }
+        // onClick={() =>
+        //   updateStatus({
+        //     id: row.original.bookingReference,
+        //     newStatus: status === "Pending" ? "Confirmed" : "Pending",
+        //   })
+        // }
         className={cn(
           "h-8 min-w-[90px] px-4 text-xs font-medium transition-colors",
           status !== "Pending"
@@ -119,8 +121,8 @@ export const columns: ColumnDef<Reservation>[] = [
       const router = useRouter()
       return (
         <div className="flex flex-col py-1">
-          <span className="font-medium text-slate-900">
-            <a className="cursor-pointer" onClick={() => router.push(`/reservation/user/${row.original.bookingReference}`)}>
+          <span className="font-medium text-slate-900 dark:text-slate-200">
+            <a className="cursor-pointer text-text" onClick={() => router.push(`/reservation/user/${row.original.bookingId}`)}>
               {row.original.guestName}
             </a>
           </span>
@@ -310,5 +312,116 @@ export function GuestDataTable() {
         </Button>
       </div>
     </div>
+  );
+}
+
+
+
+import  { useState } from "react";
+import { Settings2, Check } from "lucide-react";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
+import { TogglePatchStatus } from "./reservations.service";
+
+export type StayOption = "checkin"|"checkout"|"staying";
+
+export function OptionSelectionDialog({ 
+  trigger, 
+  id 
+}: { 
+  trigger: React.ReactNode; 
+  id: string; 
+}) {
+  const [loading, setLoading] = useState(false);
+  const [selectedValue, setSelectedValue] = useState<StayOption>("checkin");
+
+ const handleStatusChange = async () => {
+  setLoading(true);
+  try {
+    const action = TogglePatchStatus[selectedValue as keyof typeof TogglePatchStatus];
+
+    if (typeof action === "function") {
+      const res = await action(id); 
+      toast.success(`Status updated to ${selectedValue}`);
+    } else {
+      throw new Error("Invalid selection");
+    }
+  } catch (error: any) {
+    const message = error?.response?.data?.message || "Failed to update status";
+    toast.error(message);
+    console.error(error);
+  } finally {
+    setLoading(false);
+  }
+};
+
+  return (
+    <Dialog>
+      <DialogTrigger asChild>{trigger}</DialogTrigger>
+      <DialogContent className="sm:max-w-[380px]">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Settings2 className="h-5 w-5 text-violet-500" />
+            Update Stay Type
+          </DialogTitle>
+          <DialogDescription>
+            Choose the specific stay category for this room record.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="grid gap-4 py-6">
+          <div className="grid gap-2">
+            <Label htmlFor="stay-type" className="text-xs font-bold uppercase text-muted-foreground">
+              Selection Options
+            </Label>
+            <Select 
+              value={selectedValue} 
+              onValueChange={(value) => setSelectedValue(value as StayOption)}
+            >
+              <SelectTrigger id="stay-type" className="w-full h-12">
+                <SelectValue placeholder="Select an option" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="checkin">Check-In</SelectItem>
+                <SelectItem value="staying">Starts Staying</SelectItem>
+                <SelectItem value="checkout">Check-out</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <DialogFooter className="flex flex-row gap-2 sm:justify-end">
+          <DialogClose asChild>
+            <Button variant="ghost" type="button" className="flex-1 sm:flex-none">
+              Cancel
+            </Button>
+          </DialogClose>
+          <Button 
+            onClick={handleStatusChange}
+            disabled={loading}
+            className="flex-1 sm:flex-none bg-violet-600 hover:bg-violet-700 min-w-[120px]"
+          >
+            {loading ? "Updating..." : "Save Selection"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

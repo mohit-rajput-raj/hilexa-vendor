@@ -11,6 +11,7 @@ import { RatingAndTasks } from "./_components/tasks";
 import { useGetDashboard, useGetTasks } from "@/services/tanstack.query";
 import { Verify } from "@/app/(auth)/authMiddleware";
 import { useRouter } from "next/navigation";
+import { useChartRanges } from "@/context/auth/ChartRangesProvider";
 
 type Props = {};
 export type DashboardData = {
@@ -54,12 +55,14 @@ export type RecentBooking = {
   status: "confirmed" | "pending" | "cancelled";
 };
 const page = (props: Props) => {
-  
-  
+
+
   const { data } = useCurrentUser();
-  
-  const { data: s, isLoading } = useGetDashboard();
-    
+
+  const { reservationDays } = useChartRanges()
+
+  const { data: s, isLoading } = useGetDashboard(reservationDays);
+
 
   if (isLoading) return <PageSkeleton />;
 
@@ -79,7 +82,7 @@ const page = (props: Props) => {
         <div className="md:flex-row flex flex-col gap-5 ">
           <div className="w-full space-y-6 ">
             <SectionCards dash={dash} />
-            <HotelDashboard />
+            <HotelDashboard reservationDays={reservationDays} />
           </div>
           <div className="min-w-[300px]">
             <RatingAndTasks />
