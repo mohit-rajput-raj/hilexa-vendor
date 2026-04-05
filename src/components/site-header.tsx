@@ -9,6 +9,7 @@ import { IconNotification, IconSettings } from "@tabler/icons-react"
 import { ModeToggle } from "./ui/toggle-theme"
 import { Spinner } from "./ui/spinner"
 import { Suspense } from "react"
+import { InstallPwaButton } from "./install-pwa-button"
 
 export function SiteHeader() {
   const pathname = usePathname()
@@ -25,6 +26,7 @@ export function SiteHeader() {
         />
         <h1 className="text-base font-medium">{pathname.split("/")[1].toUpperCase()}</h1>
         <div className="ml-auto flex items-center gap-2">
+            <InstallPwaButton />
             <NavUser />
 
           {/* <Button variant={"ghost"}>
