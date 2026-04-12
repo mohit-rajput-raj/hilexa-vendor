@@ -1,8 +1,6 @@
-import React from 'react'
 
-type Props = {}
 
-const Rupee = (props: Props) => {
+const Rupee = () => {
   return (
    <span>₹</span>
   )
