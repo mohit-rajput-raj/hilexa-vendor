@@ -103,6 +103,13 @@ export function RoomListing() {
   const { data, isLoading } = useAllRooms();
   const [loading, setLoading] = React.useState(false);
 const [search , setSearch] = React.useState("");
+// Specify that the ref will point to an HTML element
+const targetSectionRef = React.useRef<HTMLDivElement>(null);
+
+  // 2. Define the scroll handler
+  const handleScroll = () => {
+    targetSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
   const rosms = (data?.data as Room[]) || ([] as Room[]);
 
   const filteredAndSortedRooms = React.useMemo(() => {
@@ -204,6 +211,7 @@ const [search , setSearch] = React.useState("");
             <Card
               key={room.id}
               onClick={() => {
+                handleScroll();
                 setRoomSelected(room.id);
                 setEditMode({ id: room.id, mode: false });
               }}
@@ -241,7 +249,7 @@ const [search , setSearch] = React.useState("");
                 <div className="flex flex-1 flex-col p-5">
                   <div className="flex justify-between items-start gap-2">
                     <div className="space-y-1">
-                      <CardTitle className="text-xl font-bold tracking-tight group-hover:text-primary transition-colors">
+                      <CardTitle className="text-xl font-bold tracking-tight  transition-colors">
                         {room.name}
                       </CardTitle>
 
@@ -268,7 +276,7 @@ const [search , setSearch] = React.useState("");
                     {/* Pricing */}
                     <div className="text-right">
                       <p className="text-2xl font-black text-primary">
-                        ${room.price}
+                        <Rupee/>{room.price}
                       </p>
                       <p className="text-[10px] uppercase tracking-tighter text-muted-foreground font-bold">
                         Per Night
@@ -386,6 +394,7 @@ const [search , setSearch] = React.useState("");
         </div>
 
         {/* Right Sidebar - Room Detail Preview */}
+       <section ref={targetSectionRef}>
         <div className="space-y-6 lg:sticky lg:top-6 h-fit w-full">
           {roomselected ? (
             !loading ? (
@@ -405,6 +414,7 @@ const [search , setSearch] = React.useState("");
             />
           )}
         </div>
+      </section>
       </div>
     </div>
   );
@@ -414,6 +424,8 @@ import { Building2 } from "lucide-react";
 import EditRoomForm from "./edit-room-form";
 import { cn } from "@/lib/utils";
 import { useCurrentUser } from "@/services/queryes";
+import Rupee from "@/components/rupee";
+import { useRef } from "react";
 
 export const MessageModal = ({
   title,
