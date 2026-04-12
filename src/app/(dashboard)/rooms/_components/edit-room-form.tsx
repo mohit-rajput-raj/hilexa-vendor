@@ -57,7 +57,7 @@ export default function AddRoomForm({
       description: "",
       basePrice: 1000,
       discountPrice: 0,
-      capacity: [{ adults: 2, children: 0 }],
+      capacity:{ adults: 2, children: 0 },
       beds: [{ type: "double", quantity: 1 }],
       amenities: [],
       roomSizeSqm: 25,
@@ -69,8 +69,7 @@ export default function AddRoomForm({
     mode: "onChange",
   });
 
-  const { fields: capacityFields, append: appendCapacity, remove: removeCapacity } =
-    useFieldArray({ control: form.control, name: "capacity" });
+
 
   const { fields: bedFields, append: appendBed, remove: removeBed } =
     useFieldArray({ control: form.control, name: "beds" });
@@ -372,23 +371,12 @@ export default function AddRoomForm({
                 <AccordionContent className="space-y-8 pt-4">
                   {/* Capacity */}
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <Label className="text-base font-semibold">Capacity Configurations</Label>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => appendCapacity({ adults: 2, children: 0 })}
-                      >
-                        Add Capacity Option
-                      </Button>
-                    </div>
+                    
 
-                    {capacityFields.map((field, index) => (
-                      <div key={field.id} className="flex gap-4 items-end border-b pb-4">
+                      <div className="flex gap-4 items-end border-b pb-4">
                         <FormField
                           control={form.control}
-                          name={`capacity.${index}.adults`}
+                          name={`capacity.adults`}
                           render={({ field }) => (
                             <FormItem className="flex-1">
                               <FormLabel>Adults</FormLabel>
@@ -401,7 +389,7 @@ export default function AddRoomForm({
                         />
                         <FormField
                           control={form.control}
-                          name={`capacity.${index}.children`}
+                          name={`capacity.children`}
                           render={({ field }) => (
                             <FormItem className="flex-1">
                               <FormLabel>Children</FormLabel>
@@ -412,17 +400,8 @@ export default function AddRoomForm({
                             </FormItem>
                           )}
                         />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="mb-2"
-                          onClick={() => removeCapacity(index)}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
+                        
                       </div>
-                    ))}
                   </div>
 
                   {/* Beds */}

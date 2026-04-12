@@ -432,9 +432,9 @@ export default function Process() {
       <Suspense fallback={<PageSkeleton />}>
         <div className="min-h-svh bg-slate-50/50 dark:bg-background flex flex-col items-center py-12 px-4 md:px-6">
 
-          <div className="w-full max-w-[800px] mb-10">
+          {/* <div className="w-full max-w-[800px] mb-10">
             <AnimatedStepper currentStep={currentStep} />
-          </div>
+          </div> */}
 
           <main className={cn(
             "w-full transition-all duration-500 ease-in-out bg-card border shadow-sm rounded-2xl p-6 md:p-10",

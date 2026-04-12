@@ -6,6 +6,7 @@ import { useEffect } from "react";
 import { useCurrentUser } from "@/services/queryes";
 import { PageSkeleton } from "./(dashboard)/rooms/_components/details.skeleton";
 import { useAuthStore } from "@/stores/auth.store";
+import LogoLoader from "@/components/loaders/logoloader";
 
 export default function Home() {
   const { data, isLoading } = useCurrentUser();
@@ -26,7 +27,7 @@ export default function Home() {
       router.replace("/login")
     }
   }, [data])
-  if (isLoading) return <PageSkeleton />
+  if (isLoading) return <LogoLoader />
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
       <SpinnerCustom /> loading

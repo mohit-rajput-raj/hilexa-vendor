@@ -28,11 +28,12 @@ const ButtonHandler = ({
 
   const { isDirty: isDob } = getFieldState("dob", formState);
   const { isDirty: otp } = getFieldState("otp", formState);
-  const { onGenerateOtp, veryOtp } = useSignUp();
+  const { onGenerateOtp, veryOtp, loading } = useSignUp();
   switch (currentStep) {
     case 1:
       return (
         <Button
+        disabled={loading}
           type="submit"
           variant={"default"}
           className="w-full"
@@ -42,7 +43,7 @@ const ButtonHandler = ({
             // isLastName &&
             // isPhoneNumber &&
             // isGender &&
-            isDob &&
+            // isDob &&
             // isCountry &&
             // isAddress &&
             isPassword &&
@@ -55,23 +56,26 @@ const ButtonHandler = ({
                 getValues("firstName"),
                 getValues("lastName"),
                 getValues("phoneNumber"),
-                getValues("gender"),
-                getValues("dob"),
-                getValues("country"),
-                getValues("address"),
-                getValues("zipcode"),
+                // getValues("gender"),
+                // getValues("dob"),
+                // getValues("country"),
+                // getValues("address"),
+                // getValues("zipcode"),
                 setCurrentStep,
               );
             },
           })}
         >
-          Get otp
+          {
+            loading ? "Loading..." : "Get otp"
+          }
         </Button>
       );
   }
 
   return (
     <Button
+      disabled={loading}
       type="submit"
       variant={"default"}
       className="w-full"
@@ -82,7 +86,7 @@ const ButtonHandler = ({
           },
         })}
     >
-      Verify otp
+      {loading ? "Loading..." : "Verify otp"}
     </Button>
   )
 

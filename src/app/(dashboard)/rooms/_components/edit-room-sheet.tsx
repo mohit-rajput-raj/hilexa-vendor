@@ -26,7 +26,7 @@ export function EditRoom() {
             Make changes to your Room here. Click save when you&apos;re done.
           </SheetDescription>
         </SheetHeader>
-        <AddRoomForm hotelId="345" />
+        <AddRoomForm />
        
       </SheetContent>
     </Sheet>

@@ -170,6 +170,7 @@ const SignupOtp = ({
         <Field>
           <FieldLabel>Role</FieldLabel>
           <Select
+          disabled={true}
             onValueChange={(value) => methods.setValue("role", value as any)}
             defaultValue="vendor"
           >
@@ -239,7 +240,7 @@ const SignupOtp = ({
         </Field>
 
         {/* Gender */}
-        <Field>
+        {/* <Field>
           <FieldLabel>Gender</FieldLabel>
           <Select
             onValueChange={(value) => methods.setValue("gender", value as any)}
@@ -259,10 +260,10 @@ const SignupOtp = ({
               {errors.gender.message}
             </p>
           )}
-        </Field>
+        </Field> */}
 
         {/* Date of Birth */}
-        <Field>
+        {/* <Field>
           <FieldLabel htmlFor="dob">Date of Birth</FieldLabel>
           <Input
             id="dob"
@@ -275,10 +276,10 @@ const SignupOtp = ({
               {errors.dob.message}
             </p>
           )}
-        </Field>
+        </Field> */}
 
         {/* Country */}
-        <Field>
+        {/* <Field>
           <FieldLabel htmlFor="country">Country</FieldLabel>
           <Input
             id="country"
@@ -291,10 +292,10 @@ const SignupOtp = ({
               {errors.country.message}
             </p>
           )}
-        </Field>
+        </Field> */}
 
         {/* Address - Full Width */}
-        <Field className="md:col-span-2">
+        {/* <Field className="md:col-span-2">
           <FieldLabel htmlFor="address">Address</FieldLabel>
           <Input
             id="address"
@@ -307,10 +308,10 @@ const SignupOtp = ({
               {errors.address.message}
             </p>
           )}
-        </Field>
+        </Field> */}
 
         {/* Zipcode */}
-        <Field className="md:col-span-2">
+        {/* <Field className="md:col-span-2">
           <FieldLabel htmlFor="zipcode">Zipcode / Postal Code</FieldLabel>
           <Input
             id="zipcode"
@@ -323,7 +324,7 @@ const SignupOtp = ({
               {errors.zipcode.message}
             </p>
           )}
-        </Field>
+        </Field> */}
       </div>
     </FieldGroup>
   );

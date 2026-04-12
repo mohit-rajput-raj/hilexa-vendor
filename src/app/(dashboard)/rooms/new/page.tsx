@@ -35,16 +35,20 @@ import { NewRoomProps, NewRoomSchema } from "./zod-schema";
 import { amenityIconMap } from "@/components/icons";
 import { addRooms } from "@/services/fetch.service";
 import { Verify } from "@/app/(auth)/authMiddleware";
+import { useCurrentUser } from "@/services/queryes";
+import { PageSkeleton } from "../_components/details.skeleton";
 export const amenityKeys = Object.keys(amenityIconMap) as (keyof typeof amenityIconMap)[];
 export default function AddRoomForm({
   setEditMode,
-  hotelId,
 }: {
   setEditMode?: React.Dispatch<
     React.SetStateAction<{ id: string; mode: boolean }>
   >;
-  hotelId: string;
 }) {
+  const [hotelId, setHotelId] = useState<string>("")
+  const { data, isLoading } = useCurrentUser()
+
+
 
   const { uploadFile } = useAuthStore();
   const [loading, setLoading] = useState(false);
@@ -53,25 +57,30 @@ export default function AddRoomForm({
   const form = useForm<NewRoomProps>({
     resolver: zodResolver(NewRoomSchema),
     defaultValues: {
-      hotelId: "699bf7b8a62643a1c6cd84fd",
+      hotelId: "",
       name: "family room",
       description: "",
       basePrice: 1000,
       discountPrice: 0,
-      capacity: [{ adults: 1, children: 0 }],
+      capacity: { adults: 1, children: 0 },
       beds: [{ type: "double", quantity: 1 }],
       amenities: [],
       roomSizeSqm: 25,
-      viewType: "",
+      viewType: "city",
       images: [],
       totalRooms: 1,
       isActive: true,
     },
     mode: "onChange",
   });
+  useEffect(() => {
+    if (data?.data?.approvedData?.hotelId) {
+      setHotelId(data.data.approvedData.hotelId);
+      form.setValue("hotelId", data.data.approvedData.hotelId);
+    }
+  }, [data]);
 
-  const { fields: capacityFields, append: appendCapacity, remove: removeCapacity } =
-    useFieldArray({ control: form.control, name: "capacity" });
+
 
   const { fields: bedFields, append: appendBed, remove: removeBed } =
     useFieldArray({ control: form.control, name: "beds" });
@@ -96,7 +105,7 @@ export default function AddRoomForm({
     for (const file of files) {
       try {
         const result = await uploadFile(file);
-        
+
         if (result?.url && result?.public_id && result?.resource_type) {
           newUrls.push({
             url: result.url,
@@ -153,6 +162,11 @@ export default function AddRoomForm({
       setLoading(false);
     }
   };
+  if (isLoading || !hotelId) {
+    return (
+      <PageSkeleton />
+    )
+  }
 
   return (
     <Form {...form}>
@@ -296,7 +310,7 @@ export default function AddRoomForm({
                         <FormItem>
                           <FormLabel>View Type</FormLabel>
                           <FormControl>
-                            <Input {...field} placeholder="Ocean, Garden, City..." />
+                            <Input  {...field} placeholder="Ocean, Garden, City..." />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -368,63 +382,44 @@ export default function AddRoomForm({
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <Label className="text-base font-semibold">Capacity Configurations</Label>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => appendCapacity({ adults: 1, children: 0 })}
-                      >
-                        Add Capacity Option
-                      </Button>
+
                     </div>
 
-                    {capacityFields.map((field, index) => (
-                      <div key={field.id} className="flex gap-4 items-end border-b pb-4">
-                        <FormField
-                          control={form.control}
-                          name={`capacity.${index}.adults`}
-                          render={({ field }) => (
-                            <FormItem className="flex-1">
-                              <FormLabel>Adults</FormLabel>
-                              <FormControl>
-                                <Input
-                                  type="number"
-                                  {...field}
-                                  onChange={(e) => field.onChange(Number(e.target.value))}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name={`capacity.${index}.children`}
-                          render={({ field }) => (
-                            <FormItem className="flex-1">
-                              <FormLabel>Children</FormLabel>
-                              <FormControl>
-                                <Input
-                                  type="number"
-                                  {...field}
-                                  onChange={(e) => field.onChange(Number(e.target.value))}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="mb-2"
-                          onClick={() => removeCapacity(index)}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))}
+                    <FormField
+                      control={form.control}
+                      name={`capacity.adults`}
+                      render={({ field }) => (
+                        <FormItem className="flex-1">
+                          <FormLabel>Adults</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              {...field}
+                              onChange={(e) => field.onChange(Number(e.target.value))}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name={`capacity.children`}
+                      render={({ field }) => (
+                        <FormItem className="flex-1">
+                          <FormLabel>Children</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              {...field}
+                              onChange={(e) => field.onChange(Number(e.target.value))}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
                   </div>
 
                   {/* Beds */}

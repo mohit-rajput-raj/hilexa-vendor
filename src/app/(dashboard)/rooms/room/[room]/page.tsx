@@ -4,7 +4,7 @@ import { Verify } from "@/app/(auth)/authMiddleware"
 const page = () => {
   return (
     <div className="min-h-screen bg-muted/30 ">
-      <AddRoomForm hotelId={"asds"} />
+      <AddRoomForm  />
     </div>
   )
 }
