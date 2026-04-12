@@ -443,10 +443,7 @@ import { hotelFeatures } from "@/components/icons";
 import ImageField from "./image-input";
 import { toast } from "sonner";
 
-// const LocationPicker = dynamic(() => import("./location-picker"), {
-//     ssr: false,
-//     loading: () => <div className="h-[300px] w-full bg-white/[0.02] border border-white/10 animate-pulse rounded-2xl flex items-center justify-center text-muted-foreground">Loading Map...</div>
-// });
+
 
 
 import { useEffect } from "react";
@@ -529,37 +526,9 @@ export const Step_3 = ({ methods }: { currentStep: number; methods: UseFormRetur
     const location = watch("location") || { type: "Point", coordinates: [72.8777, 19.0760] };
     const inputClasses = "h-12 bg-white/[0.03] border-white/10 focus:border-primary/50 focus:ring-primary/20 transition-all placeholder:text-muted-foreground/40";
     // Inside Step_3.tsx
-    const handleGetCurrentLocation = () => {
-        if (!navigator.geolocation) {
-            toast.error("Geolocation is not supported");
-            return;
-        }
-
-        setIsLocating(true);
-        navigator.geolocation.getCurrentPosition(
-            (pos) => {
-                const { latitude, longitude } = pos.coords;
-
-                // This update triggers the 'value' prop change in LocationPicker,
-                // which then triggers map.flyTo() inside the MapUpdater.
-                setValue("location", {
-                    type: "Point",
-                    coordinates: [longitude, latitude],
-                }, { shouldValidate: true });
-
-                setIsLocating(false);
-                toast.success("Location synced!");
-            },
-            (err) => {
-                setIsLocating(false);
-                toast.error("Location access denied.");
-            },
-            { enableHighAccuracy: true }
-        );
-    };
     // const handleGetCurrentLocation = () => {
     //     if (!navigator.geolocation) {
-    //         toast.error("Geolocation is not supported by your browser");
+    //         toast.error("Geolocation is not supported");
     //         return;
     //     }
 
@@ -567,22 +536,72 @@ export const Step_3 = ({ methods }: { currentStep: number; methods: UseFormRetur
     //     navigator.geolocation.getCurrentPosition(
     //         (pos) => {
     //             const { latitude, longitude } = pos.coords;
+
+    //             // This update triggers the 'value' prop change in LocationPicker,
+    //             // which then triggers map.flyTo() inside the MapUpdater.
     //             setValue("location", {
     //                 type: "Point",
-    //                 coordinates: [longitude, latitude], // GeoJSON [lng, lat]
+    //                 coordinates: [longitude, latitude],
     //             }, { shouldValidate: true });
 
     //             setIsLocating(false);
-    //             toast.success("Location pinned to your current position");
+    //             toast.success("Location synced!");
     //         },
     //         (err) => {
     //             setIsLocating(false);
-    //             toast.error("Unable to retrieve location. Please pin it manually.");
-    //             console.error(err);
+    //             toast.error("Location access denied.");
     //         },
     //         { enableHighAccuracy: true }
     //     );
     // };
+   const handleGetCurrentLocation = () => {
+    if (!navigator.geolocation) {
+        toast.error("Geolocation is not supported");
+        return;
+    }
+
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+            const { latitude, longitude } = pos.coords;
+
+            // 1. Update Map and Coordinates
+            setValue("location", {
+                type: "Point",
+                coordinates: [longitude, latitude],
+            }, { shouldValidate: true });
+
+            try {
+                // 2. Reverse Geocode to get City and Country
+                const response = await fetch(
+                    `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
+                );
+                const data = await response.json();
+
+                // 3. Auto-fill the form fields
+                // Ensure these strings match your SignUpProps schema keys
+                setValue("hotelCity", data.city || data.locality || "");
+                // setValue("hotelCountry", data.countryName || ""); 
+                
+                // If you want to fill the address field with a formatted string
+                const fullAddress = `${data.city}, ${data.principalSubdivision}, ${data.countryName}`;
+                setValue("hotelAddress", fullAddress);
+
+                toast.success("Location and address synced!");
+            } catch (error) {
+                console.error("Error fetching address:", error);
+                toast.error("Coordinates found, but failed to fetch city/country names.");
+            } finally {
+                setIsLocating(false);
+            }
+        },
+        (err) => {
+            setIsLocating(false);
+            toast.error("Location access denied.");
+        },
+        { enableHighAccuracy: true }
+    );
+};
 
     return (
         <FieldGroup className="space-y-10 animate-in fade-in slide-in-from-bottom-2 duration-500">

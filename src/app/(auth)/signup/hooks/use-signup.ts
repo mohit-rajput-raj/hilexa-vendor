@@ -232,11 +232,11 @@ export const useSignUp = () => {
     firstName: string,
     lastName: string,
     phoneNumber: string,
-    gender: string,
-    dob: string,
-    country: string,
-    zipcode: string,
-    address: string,
+    // gender: string,
+    // dob: string,
+    // country: string,
+    // zipcode: string,
+    // address: string,
     onNext: React.Dispatch<React.SetStateAction<number>>,
   ) => {
     setLoading(true);
@@ -249,11 +249,11 @@ export const useSignUp = () => {
         firstName,
         lastName,
         phoneNumber,
-        gender,
-        dob,
-        country,
-        zipcode,
-        address,
+        // gender,
+        // dob,
+        // country,
+        // zipcode,
+        // address,
       });
       if (result.success) {
         toast.success(result.message || "OTP sent to your email");
