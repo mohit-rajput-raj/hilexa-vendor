@@ -4,11 +4,11 @@ import { SectionCards } from "@/components/section-cards";
 import { useCurrentUser } from "@/services/queryes";
 import React, { Suspense, useEffect, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import { MessageModal } from "../rooms/_components/full-frame";
-import { PageSkeleton } from "../rooms/_components/details.skeleton";
+import { MessageModal } from "../(categories)/rooms/_components/full-frame";
+import { PageSkeleton } from "../(categories)/rooms/_components/details.skeleton";
 import { HotelDashboard } from "./_components/charts";
 import { RatingAndTasks } from "./_components/tasks";
-import { useGetDashboard, useGetTasks } from "@/services/tanstack.query";
+import { useGetDashboard, useGetMultivendorStatss, useGetTasks } from "@/services/tanstack.query";
 import { Verify } from "@/app/(auth)/authMiddleware";
 import { useRouter } from "next/navigation";
 import { useChartRanges } from "@/context/auth/ChartRangesProvider";
@@ -60,7 +60,7 @@ const page = (props: Props) => {
   const { data } = useCurrentUser();
 
   const { reservationDays } = useChartRanges()
-
+  const { data: ss, isLoading: isss } = useGetMultivendorStatss()
   const { data: s, isLoading } = useGetDashboard(reservationDays);
 
 
@@ -79,8 +79,8 @@ const page = (props: Props) => {
       }
     >
       <Suspense fallback={<PageSkeleton />}>
-        <div className="md:flex-row flex flex-col gap-5 ">
-          <div className="w-full space-y-6 ">
+        <div className="md:flex-row flex flex-col gap-2 ">
+          <div className="w-full space-y-2 ">
             <SectionCards dash={dash} />
             <HotelDashboard reservationDays={reservationDays} />
           </div>

@@ -8,10 +8,10 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { MessageModal } from "@/app/(dashboard)/rooms/_components/full-frame";
+import { MessageModal } from "@/app/(dashboard)/(categories)/rooms/_components/full-frame";
 import { ErrorBoundary } from "react-error-boundary";
 import { Suspense } from "react";
-import { PageSkeleton } from "@/app/(dashboard)/rooms/_components/details.skeleton";
+import { PageSkeleton } from "@/app/(dashboard)/(categories)/rooms/_components/details.skeleton";
 import {
   useAuthContext,
 } from "@/context/auth/AuthContextProvider";
@@ -170,7 +170,7 @@ const SignupOtp = ({
         <Field>
           <FieldLabel>Role</FieldLabel>
           <Select
-          disabled={true}
+            disabled={true}
             onValueChange={(value) => methods.setValue("role", value as any)}
             defaultValue="vendor"
           >

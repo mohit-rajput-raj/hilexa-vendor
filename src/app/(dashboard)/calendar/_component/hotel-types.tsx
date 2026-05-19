@@ -25,7 +25,7 @@ type hoteTypesPropos = {
 };
 
 import BigCalender from "./big-calander";
-import { MessageModal } from "../../rooms/_components/full-frame";
+import { MessageModal } from "../../(categories)/rooms/_components/full-frame";
 
 type Props = {};
 
@@ -40,11 +40,11 @@ const MainCalenderFrame = (props: Props) => {
           setSelected={(v) => setSelected(v)}
         />
       </div>
-          {selected ? (
-          <BigCalender selected={selected} />
-        ) : (
-          <MessageModal className="w-full min-h-screen"  title="calender" description="select any roomtype" imgsrc="/selectRoomType.png" />
-        )}
+      {selected ? (
+        <BigCalender selected={selected} />
+      ) : (
+        <MessageModal className="w-full min-h-screen" title="calender" description="select any roomtype" imgsrc="/selectRoomType.png" />
+      )}
     </>
   );
 };
@@ -60,7 +60,7 @@ import {
 } from "@/components/ui/collapsible";
 import { useGetRoomTypes } from "./querys";
 import { cn } from "@/lib/utils";
-import { PageSkeleton, SkeletonText } from "../../rooms/_components/details.skeleton";
+import { PageSkeleton, SkeletonText } from "../../(categories)/rooms/_components/details.skeleton";
 import { useCurrentUser } from "@/services/queryes";
 
 export function ItemGroupExample({
@@ -86,7 +86,7 @@ export function ItemGroupExample({
     >
       {/* Always-visible toggle header */}
       <div className="flex items-center justify-start p-2  bg-muted/40">
-        
+
         <Button
           variant="ghost"
           size="icon"
@@ -130,9 +130,9 @@ export function ItemGroupExample({
 
             {isLoading ? (
               <div className="py-6 text-center text-muted-foreground text-sm">
-                <SkeletonText/>
-                <SkeletonText/>
-                <SkeletonText/>
+                <SkeletonText />
+                <SkeletonText />
+                <SkeletonText />
               </div>
             ) : (
               types.map((value: hoteTypesPropos) => (
@@ -140,7 +140,7 @@ export function ItemGroupExample({
                   key={value._id}
                   variant={selected === value._id ? "outline" : "default"}
                   onClick={() => setSelected(value._id)}
-                  className={cn("cursor-pointer", selected === value._id ?"dark:bg-background/20 bg-gray-100":"")}
+                  className={cn("cursor-pointer", selected === value._id ? "dark:bg-background/20 bg-gray-100" : "")}
                 >
                   <ItemContent className="gap-0.5">
                     <ItemTitle className="text-sm">{value.name}</ItemTitle>

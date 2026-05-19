@@ -102,9 +102,9 @@ export function RoomListing() {
   const router = useRouter();
   const { data, isLoading } = useAllRooms();
   const [loading, setLoading] = React.useState(false);
-const [search , setSearch] = React.useState("");
-// Specify that the ref will point to an HTML element
-const targetSectionRef = React.useRef<HTMLDivElement>(null);
+  const [search, setSearch] = React.useState("");
+  // Specify that the ref will point to an HTML element
+  const targetSectionRef = React.useRef<HTMLDivElement>(null);
 
   // 2. Define the scroll handler
   const handleScroll = () => {
@@ -115,11 +115,11 @@ const targetSectionRef = React.useRef<HTMLDivElement>(null);
   const filteredAndSortedRooms = React.useMemo(() => {
     let rooms = [...rosms];
     if (search.trim() !== "") {
-    rooms = rooms.filter((room) =>
-      room.name.toLowerCase().includes(search.toLowerCase())
-    );
-  }
-    
+      rooms = rooms.filter((room) =>
+        room.name.toLowerCase().includes(search.toLowerCase())
+      );
+    }
+
     if (typeFilter !== "all") {
       rooms = rooms.filter((room) =>
         room.name.toLowerCase().includes(typeFilter.toLowerCase()),
@@ -276,7 +276,7 @@ const targetSectionRef = React.useRef<HTMLDivElement>(null);
                     {/* Pricing */}
                     <div className="text-right">
                       <p className="text-2xl font-black text-primary">
-                        <Rupee/>{room.price}
+                        <Rupee />{room.price}
                       </p>
                       <p className="text-[10px] uppercase tracking-tighter text-muted-foreground font-bold">
                         Per Night
@@ -286,7 +286,7 @@ const targetSectionRef = React.useRef<HTMLDivElement>(null);
 
                   {/* Description */}
                   <p className="mt-3 text-sm text-muted-foreground line-clamp-2 leading-relaxed italic">
-                    "Luxury suite with premium amenities and scenic views."
+                    Luxury suite with premium amenities and scenic views.
                   </p>
 
                   {/* Footer / Meta */}
@@ -394,27 +394,27 @@ const targetSectionRef = React.useRef<HTMLDivElement>(null);
         </div>
 
         {/* Right Sidebar - Room Detail Preview */}
-       <section ref={targetSectionRef}>
-        <div className="space-y-6 lg:sticky lg:top-6 h-fit w-full">
-          {roomselected ? (
-            !loading ? (
-              <PageSkeleton />
+        <section ref={targetSectionRef}>
+          <div className="space-y-6 lg:sticky lg:top-6 h-fit w-full">
+            {roomselected ? (
+              !loading ? (
+                <PageSkeleton />
+              ) : (
+                <RoomSideBarDetails
+                  editmode={editmode}
+                  setEditMode={setEditMode}
+                />
+              )
             ) : (
-              <RoomSideBarDetails
-                editmode={editmode}
-                setEditMode={setEditMode}
+              <MessageModal
+                title="Select Hotel"
+                description="Please select a hotel"
+                imgsrc="/select.png"
+                classImgDiv="h-50 w-50"
               />
-            )
-          ) : (
-            <MessageModal
-              title="Select Hotel"
-              description="Please select a hotel"
-              imgsrc="/select.png"
-              classImgDiv="h-50 w-50"
-            />
-          )}
-        </div>
-      </section>
+            )}
+          </div>
+        </section>
       </div>
     </div>
   );

@@ -1,5 +1,7 @@
 import { axiosApi } from "@/lib/axios";
+import { useCurrentUser } from "@/services/queryes";
 import { create } from "zustand";
+import { persist } from "zustand/middleware"; // 1. Import the middleware
 
 interface User {
   id: string;
@@ -25,48 +27,24 @@ interface AuthStates {
   setLoginBoxOpen: (open: boolean) => void;
   signupBoxOpen: boolean;
   setSignupBoxOpen: (open: boolean) => void;
-  ///////
   vendorEmail: string;
   setVendorEmail: (email: string) => void;
   businessName: string;
   setBusinessName: (name: string) => void;
   hotelId: string;
   setHotelId: (id: string) => void;
-  //////////
   isLoging: boolean;
   isSiging: boolean;
   currUser: User | null;
-  hotel: {
-    _id: string;
-    name: string;
-  };
+  hotel: { _id: string; name: string };
   draft: boolean;
-  userLogin: (data: Login_signup_Data) => Promise<{
-    success: boolean;
-    message: string;
-    currentStep?: number;
-    status: string;
-  }>;
-  userSignup: (
-    data: Login_signup_Data,
-  ) => Promise<{ success: boolean; message: string }>;
-  verifyOTP: (data: { email: string; otp: string }) => Promise<{
-    success: boolean;
-    message: string;
-    currentStep: number;
-    status: string;
-  }>;
-  resendOTP: (email: string) => Promise<{ success: boolean; message: string }>;
-  updateUser: (
-    data: Partial<User>,
-  ) => Promise<{ success: boolean; message: string }>;
-  uploadFile: (file: File) => Promise<{
-    success: boolean;
-    url?: string;
-    message: string;
-    public_id?: string;
-    resource_type?: string;
-  }>;
+  userLogin: (data: Login_signup_Data) => Promise<any>;
+  switchAccount: (id: string) => Promise<any>;
+  userSignup: (data: Login_signup_Data) => Promise<any>;
+  verifyOTP: (data: { email: string; otp: string }) => Promise<any>;
+  resendOTP: (email: string) => Promise<any>;
+  updateUser: (data: Partial<User>) => Promise<any>;
+  uploadFile: (file: File) => Promise<any>;
 }
 
 interface Login_signup_Data {
@@ -83,190 +61,215 @@ interface Login_signup_Data {
   zipcode?: string;
 }
 
-export const useAuthStore = create<AuthStates>()((set) => ({
-  loginBoxOpen: false,
-  setLoginBoxOpen: (open: boolean) => set({ loginBoxOpen: open }),
-  signupBoxOpen: false,
-  setSignupBoxOpen: (open: boolean) => set({ signupBoxOpen: open }),
-  isLoging: false,
-  isSiging: false,
-  currUser: null,
-  currStep: 2,
-  steeperStep: 2,
-  setSteeperStep: (s: number) => set({ steeperStep: s }),
-  setCurrStep: (step: number) => set({ currStep: step }),
-  vendorEmail: "",
-  setVendorEmail: (email: string) => set({ vendorEmail: email }),
-  businessName: "",
-  setBusinessName: (name: string) => set({ businessName: name }),
-  hotelId: "",
-  setHotelId: (id: string) => set({ hotelId: id }),
-  hotel: {
-    _id: "",
-    name: "",
-  },
-  draft: true,
+// 2. Wrap your store configuration with persist()
+export const useAuthStore = create<AuthStates>()(
+  persist(
+    (set) => ({
+      loginBoxOpen: false,
+      setLoginBoxOpen: (open: boolean) => set({ loginBoxOpen: open }),
+      signupBoxOpen: false,
+      setSignupBoxOpen: (open: boolean) => set({ signupBoxOpen: open }),
+      isLoging: false,
+      isSiging: false,
+      currUser: null,
+      currStep: 2,
+      steeperStep: 2,
+      setSteeperStep: (s: number) => set({ steeperStep: s }),
+      setCurrStep: (step: number) => set({ currStep: step }),
+      vendorEmail: "",
+      setVendorEmail: (email: string) => set({ vendorEmail: email }),
+      businessName: "",
+      setBusinessName: (name: string) => set({ businessName: name }),
+      hotelId: "",
+      setHotelId: (id: string) => set({ hotelId: id }),
+      hotel: { _id: "", name: "" },
+      draft: true,
 
-  userLogin: async (data: Login_signup_Data) => {
+      switchAccount: async (id: string) => {
+        console.log("don");
 
-    set({ isLoging: true });
-    try {
-      const res = await axiosApi.post("/auth/login", data);
+        set({ isLoging: true });
+        try {
+          const res = await axiosApi.post("/vendor-accounts/switch-account", {
+            targetVendorId: id,
+          });
+          if (res.data.success) {
+            const token = res.data.accessToken;
+            const status = res.data.vendor.status;
+            localStorage.setItem("accessToken", token);
+            localStorage.setItem("status", status);
 
-      if (res.data.success) {
-        set({ currUser: res.data.data.user });
-        const token = res.data.accessToken;
-        const status = res.data.data.vendor.status;
-        localStorage.setItem("accessToken", token);
-        localStorage.setItem("status", status);
-        set({
-          draft:
-            res.data.data.vendor.status === "draft" ||
-            res.data.data.vendor.status === "pending" ||
-            res.data.data.vendor.status === "rejected",
-        });
-        set({ currStep: res.data.data.vendor.currentStep || 1 });
+            return {
+              success: true,
+            };
+          }
+          return {
+            success: false,
+            message: res.data.message || "Login failed",
+            currentStep: 0,
+            status: "draft",
+          };
+        } catch (error) {
+          return [];
+        }
+      },
+      userLogin: async (data: Login_signup_Data) => {
+        set({ isLoging: true });
+        try {
+          const res = await axiosApi.post("/auth/login", data);
+          if (res.data.success) {
+            set({ currUser: res.data.data.user });
+            const token = res.data.accessToken;
+            const status = res.data.data.vendor.status;
+            localStorage.setItem("accessToken", token);
+            localStorage.setItem("status", status);
+            set({
+              draft: ["draft", "pending", "rejected"].includes(
+                res.data.data.vendor.status,
+              ),
+              currStep: res.data.data.vendor.currentStep || 1,
+            });
+            return {
+              success: true,
+              message: res.data.message,
+              currentStep: res.data.data.vendor.currentStep || 1,
+              status: res.data.data.vendor.status,
+            };
+          }
+          return {
+            success: false,
+            message: res.data.message || "Login failed",
+            currentStep: 0,
+            status: "draft",
+          };
+        } catch (error) {
+          const err = error as any;
+          return {
+            success: false,
+            message: err.response?.data?.message || "Login failed",
+            currentStep: 0,
+            status: "draft",
+          };
+        } finally {
+          set({ isLoging: false });
+        }
+      },
 
-        return {
-          success: true,
-          message: res.data.message,
-          currentStep: res.data.data.vendor.currentStep || 1,
-          status: res.data.data.vendor.status,
-        };
-      }
-      return {
-        success: false,
-        message: res.data.message || "Login failed",
-        currentStep: 0,
-        status: "draft",
-      };
-    } catch (error) {
-      const err = error as { response?: { data?: { message?: string } } };
-      return {
-        success: false,
-        message: err.response?.data?.message || "Login failed",
-        currentStep: 0,
-        status: "draft",
-      };
-    } finally {
-      set({ isLoging: false });
-    }
-  },
+      userSignup: async (data: Login_signup_Data) => {
+        set({ isSiging: true });
+        try {
+          const res = await axiosApi.post("/auth/signup", data);
+          return { success: res.data.success, message: res.data.message };
+        } catch (error) {
+          const err = error as any;
+          return {
+            success: false,
+            message: err.response?.data?.message || "Signup failed",
+          };
+        } finally {
+          set({ isSiging: false });
+        }
+      },
 
-  userSignup: async (data: Login_signup_Data) => {
-    set({ isSiging: true });
+      verifyOTP: async (data: { email: string; otp: string }) => {
+        set({ isSiging: true });
+        try {
+          const res = await axiosApi.post("/auth/verify-otp", data);
+          if (res.data.success) {
+            set({ currUser: res.data.data.user });
+            localStorage.setItem("accessToken", res.data.accessToken);
+            localStorage.setItem("status", res.data.data.vendor.status);
+            return {
+              success: true,
+              message: res.data.message,
+              currentStep: res.data.data.vendor?.currentStep || 0,
+              status: res.data.data.vendor.status,
+            };
+          }
+          return {
+            success: false,
+            message: res.data.message || "Verification failed",
+            currentStep: res.data.data.vendor.currentStep,
+            status: res.data.data.vendor.status,
+          };
+        } catch (error) {
+          const err = error as any;
+          return {
+            success: false,
+            message: err.response?.data?.message || "Verification failed",
+            currentStep: 0,
+            status: "draft",
+          };
+        } finally {
+          set({ isSiging: false });
+        }
+      },
 
-    try {
-      const res = await axiosApi.post("/auth/signup", data);
-      return { success: res.data.success, message: res.data.message };
-    } catch (error) {
-      const err = error as { response?: { data?: { message?: string } } };
-      return {
-        success: false,
-        message: err.response?.data?.message || "Signup failed",
-      };
-    } finally {
-      set({ isSiging: false });
-    }
-  },
+      resendOTP: async (email: string) => {
+        try {
+          const res = await axiosApi.post("/auth/resend-otp", { email });
+          return { success: res.data.success, message: res.data.message };
+        } catch (error) {
+          const err = error as any;
+          return {
+            success: false,
+            message: err.response?.data?.message || "Failed to resend OTP",
+          };
+        }
+      },
 
-  verifyOTP: async (data: { email: string; otp: string }) => {
-    set({ isSiging: true });
-    try {
-      const res = await axiosApi.post("/auth/verify-otp", data);
-      if (res.data.success) {
-        set({ currUser: res.data.data.user });
-        localStorage.setItem("accessToken", res.data.accessToken);
-        localStorage.setItem("status", res.data.data.vendor.status);
-        return {
-          success: true,
-          message: res.data.message,
-          currentStep: res.data.data.vendor?.currentStep || 0,
-          status: res.data.data.vendor.status,
-        };
-      }
-      return {
-        success: false,
-        message: res.data.message || "Verification failed",
-        currentStep: res.data.data.vendor.currentStep,
-        status: res.data.data.vendor.status,
-      };
-    } catch (error) {
-      const err = error as { response?: { data?: { message?: string } } };
-      return {
-        success: false,
-        message: err.response?.data?.message || "Verification failed",
-        currentStep: 0,
-        status: "draft",
-      };
-    } finally {
-      set({ isSiging: false });
-    }
-  },
+      updateUser: async (data: Partial<User>) => {
+        try {
+          const res = await axiosApi.patch("/users/update-me", data);
+          if (res.data.success) {
+            set({ currUser: res.data.data });
+            return { success: true, message: "Profile updated successfully" };
+          }
+          return {
+            success: false,
+            message: res.data.message || "Failed to update profile",
+          };
+        } catch (error) {
+          const err = error as any;
+          return {
+            success: false,
+            message: err.response?.data?.message || "Failed to update profile",
+          };
+        }
+      },
 
-  resendOTP: async (email: string) => {
-    try {
-      const res = await axiosApi.post("/auth/resend-otp", { email });
-      return { success: res.data.success, message: res.data.message };
-    } catch (error) {
-      const err = error as { response?: { data?: { message?: string } } };
-      return {
-        success: false,
-        message: err.response?.data?.message || "Failed to resend OTP",
-      };
-    }
-  },
-
-  updateUser: async (data: Partial<User>) => {
-    try {
-      const res = await axiosApi.patch("/users/update-me", data);
-      if (res.data.success) {
-        set({ currUser: res.data.data });
-        return { success: true, message: "Profile updated successfully" };
-      }
-      return {
-        success: false,
-        message: res.data.message || "Failed to update profile",
-      };
-    } catch (error) {
-      const err = error as { response?: { data?: { message?: string } } };
-      return {
-        success: false,
-        message: err.response?.data?.message || "Failed to update profile",
-      };
-    }
-  },
-
-  uploadFile: async (file: File) => {
-    const formData = new FormData();
-    formData.append("files", file);
-    formData.append("folder", "profiles");
-
-    try {
-      const res = await axiosApi.post("/uploads", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-      if (res.data.success) {
-        return {
-          success: true,
-          url: res.data.files[0].url,
-          message: "File uploaded successfully",
-          public_id: res.data.files[0].public_id as string,
-          resource_type: res.data.files[0].resource_type as string,
-        };
-      }
-      return {
-        success: false,
-        message: res.data.message || "Upload failed",
-      };
-    } catch (error) {
-      const err = error as { response?: { data?: { message?: string } } };
-      return {
-        success: false,
-        message: err.response?.data?.message || "Upload failed",
-      };
-    }
-  },
-}));
+      uploadFile: async (file: File) => {
+        const formData = new FormData();
+        formData.append("files", file);
+        formData.append("folder", "profiles");
+        try {
+          const res = await axiosApi.post("/uploads", formData, {
+            headers: { "Content-Type": "multipart/form-data" },
+          });
+          if (res.data.success) {
+            return {
+              success: true,
+              url: res.data.files[0].url,
+              message: "File uploaded successfully",
+              public_id: res.data.files[0].public_id,
+              resource_type: res.data.files[0].resource_type,
+            };
+          }
+          return {
+            success: false,
+            message: res.data.message || "Upload failed",
+          };
+        } catch (error) {
+          const err = error as any;
+          return {
+            success: false,
+            message: err.response?.data?.message || "Upload failed",
+          };
+        }
+      },
+    }),
+    {
+      name: "auth-storage", // 3. Unique name for your localStorage key
+    },
+  ),
+);

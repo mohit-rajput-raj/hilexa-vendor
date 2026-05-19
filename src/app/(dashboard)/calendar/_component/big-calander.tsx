@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useGetCalender } from "./querys"; // ← your query hook
 import { useAuthStore } from "@/stores/auth.store";
-import { PageSkeleton } from "../../rooms/_components/details.skeleton";
+import { PageSkeleton } from "../../(categories)/rooms/_components/details.skeleton";
 import { deleteCalenderData, updateCalenderData } from "./fetch.service";
 import {
   Popover,
@@ -120,38 +120,38 @@ const BigCalender: React.FC<{ selected: string | null }> = ({ selected }) => {
     );
   };
 
-const disabledDate = (current: Dayjs) => {
-  const today = dayjs().startOf('day');
-  const startOfMonth = dayjs().startOf('month');
-  const endOfMonth = dayjs().endOf('month');
+  const disabledDate = (current: Dayjs) => {
+    const today = dayjs().startOf('day');
+    const startOfMonth = dayjs().startOf('month');
+    const endOfMonth = dayjs().endOf('month');
 
-  // Disable if before today OR if NOT in the current month
-  const isBeforeToday = current && current < today;
-  const isNotInCurrentMonth = current < startOfMonth || current > endOfMonth;
+    // Disable if before today OR if NOT in the current month
+    const isBeforeToday = current && current < today;
+    const isNotInCurrentMonth = current < startOfMonth || current > endOfMonth;
 
-  return isBeforeToday || isNotInCurrentMonth;
-};
+    return isBeforeToday || isNotInCurrentMonth;
+  };
 
-// 2. Updated selection logic
-const handleDateSelect = (date: Dayjs) => {
-  const today = dayjs().startOf('day');
-  const startOfMonth = dayjs().startOf('month');
-  const endOfMonth = dayjs().endOf('month');
+  // 2. Updated selection logic
+  const handleDateSelect = (date: Dayjs) => {
+    const today = dayjs().startOf('day');
+    const startOfMonth = dayjs().startOf('month');
+    const endOfMonth = dayjs().endOf('month');
 
-  // BLOCK: Before Today
-  if (date.isBefore(today)) {
-    return; // Do nothing
-  }
+    // BLOCK: Before Today
+    if (date.isBefore(today)) {
+      return; // Do nothing
+    }
 
-  // BLOCK: Outside current month
-  if (date.isBefore(startOfMonth) || date.isAfter(endOfMonth)) {
-    return; // Do nothing
-  }
+    // BLOCK: Outside current month
+    if (date.isBefore(startOfMonth) || date.isAfter(endOfMonth)) {
+      return; // Do nothing
+    }
 
-  // If passed checks, open dialog
-  setSelectedDate(date);
-  setOpen(true);
-};
+    // If passed checks, open dialog
+    setSelectedDate(date);
+    setOpen(true);
+  };
 
   if (!mounted) return null;
   // if (isLoading || isRefetching) {
@@ -278,7 +278,7 @@ const handleDateSelect = (date: Dayjs) => {
   }
 `}</style>
 
-      
+
       </div>
     </ConfigProvider>
   );

@@ -2,30 +2,19 @@
 
 import * as React from "react"
 import {
-  IconBox,
+  IconBike,
   IconCalendar,
-  IconCamera,
-  IconChartBar,
+  IconCar,
   IconDashboard,
   IconDatabase,
-  IconFileAi,
-  IconFileDescription,
-  IconFileWord,
-  IconFolder,
-  IconHelp,
   IconHome,
-  IconInnerShadowTop,
   IconListDetails,
   IconMessage,
-  IconReport,
-  IconSearch,
-  IconSettings,
-  IconUsers,
+  IconMountain,
+  IconTower,
 } from "@tabler/icons-react"
 
-import { NavDocuments } from "@/components/nav-documents"
 import { NavMain } from "@/components/nav-main"
-import { NavSecondary } from "@/components/nav-secondary"
 import { NavUser } from "@/components/nav-user"
 import {
   Sidebar,
@@ -38,10 +27,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import LOGO from "./logo/logo"
-import { NavProjects } from "./navprojects"
-import { BookOpen } from "lucide-react"
-import { usePathname, useRouter } from "next/navigation"
-import { useIsMobile } from "@/hooks/use-mobile"
+import { usePathname } from "next/navigation"
 
 export const data = {
   user: {
@@ -49,75 +35,71 @@ export const data = {
     email: "admin@gmail.com",
     avatar: "/girl.png",
   },
-
-  navMain: [
-    {
-      title: "Dashboard",
-      url: "/dashboard",
-      icon: IconDashboard,
-    },
-    {
-      title: "Reservation",
-      url: "/reservation",
-      icon: IconListDetails,
-    },
-    {
-      title: "Rooms",
-      url: "/rooms",
-      icon: IconHome,
-    },
-    // {
-    //   title: "Messages",
-    //   url: "/messages",
-    //   icon: IconMessage,
-    // },
-    
-    {
-      title: "Calendar",
-      url: "/calendar",
-      icon: IconCalendar,
-    },
-    {
-      title: "Reviews",
-      url: "/reviews",
-      icon: IconMessage, 
-    },
-    {
-      title: "Invoice",
-      url: "/invoice",
-      icon: IconDatabase, 
-    },
-    // {
-    //   title: "Financials",
-    //   url: "/financials",          
-    //   icon: IconDatabase,
-    //   items: [
-    //     {
-    //       title: "Invoice",
-    //       url: "/financials/invoice",
-    //     },
-    //     {
-    //       title: "Expense",
-    //       url: "/financials/expense",
-    //     },
-    //   ],
-    // },
-  ],
+  navMain: {
+    hotel: [
+      { title: "Dashboard", url: "/dashboard", icon: IconDashboard },
+      { title: "Reservation", url: "/reservation", icon: IconListDetails },
+      { title: "Rooms", url: "/rooms", icon: IconHome },
+      { title: "Calendar", url: "/calendar", icon: IconCalendar },
+      { title: "Reviews", url: "/reviews", icon: IconMessage },
+      { title: "Invoice", url: "/invoice", icon: IconDatabase },
+    ],
+    adventure: [
+      { title: "Dashboard", url: "/dashboard", icon: IconDashboard },
+      { title: "Reservation", url: "/reservation", icon: IconListDetails },
+      { title: "Adventure", url: "/adventure", icon: IconMountain },
+      { title: "Calendar", url: "/calendar", icon: IconCalendar },
+      { title: "Reviews", url: "/reviews", icon: IconMessage },
+      { title: "Invoice", url: "/invoice", icon: IconDatabase },
+    ],
+    cab: [
+      { title: "Dashboard", url: "/dashboard", icon: IconDashboard },
+      { title: "Reservation", url: "/reservation", icon: IconListDetails },
+      { title: "Cabs", url: "/cabs", icon: IconCar },
+      { title: "Calendar", url: "/calendar", icon: IconCalendar },
+      { title: "Reviews", url: "/reviews", icon: IconMessage },
+      { title: "Invoice", url: "/invoice", icon: IconDatabase },
+    ],
+    bike: [
+      { title: "Dashboard", url: "/dashboard", icon: IconDashboard },
+      { title: "Reservation", url: "/reservation", icon: IconListDetails },
+      { title: "Bikes", url: "/bikes", icon: IconBike },
+      { title: "Calendar", url: "/calendar", icon: IconCalendar },
+      { title: "Reviews", url: "/reviews", icon: IconMessage },
+      { title: "Invoice", url: "/invoice", icon: IconDatabase },
+    ],
+    tour: [
+      { title: "Dashboard", url: "/dashboard", icon: IconDashboard },
+      { title: "Reservation", url: "/reservation", icon: IconListDetails },
+      { title: "Tours", url: "/tours", icon: IconTower },
+      { title: "Calendar", url: "/calendar", icon: IconCalendar },
+      { title: "Reviews", url: "/reviews", icon: IconMessage },
+      { title: "Invoice", url: "/invoice", icon: IconDatabase },
+    ],
+  },
 }
 
-
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const router = useRouter()
   const pathname = usePathname();
   const { isMobile, setOpenMobile } = useSidebar();
-  
+
+  // 1. FIXED: Set safe default state to prevent SSR/Hydration mismatches
+  const [currCategory, setCurrCategory] = React.useState<keyof typeof data.navMain>("hotel");
 
   React.useEffect(() => {
+    // 2. FIXED: Safely sync category from localStorage on the client side
+    const savedCategory = localStorage.getItem("category") as keyof typeof data.navMain;
+    if (savedCategory && data.navMain[savedCategory]) {
+      setCurrCategory(savedCategory);
+    }
 
     if (isMobile) {
       setOpenMobile(false);
     }
   }, [pathname, isMobile, setOpenMobile]);
+
+  // Fallback checking to prevent reading properties of undefined
+  const activeNavigationItems = data.navMain[currCategory] || data.navMain.hotel;
 
   return (
     <Sidebar collapsible="offcanvas" {...props}>
@@ -130,11 +112,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
-      
+
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        {/* 3. FIXED: Passes the state-driven, dynamic navigation items schema */}
+        <NavMain items={activeNavigationItems} />
       </SidebarContent>
-      
+
       <SidebarFooter>
         <NavUser />
       </SidebarFooter>

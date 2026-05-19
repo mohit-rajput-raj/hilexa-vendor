@@ -1,15 +1,42 @@
 "use client";
 import { useQuery } from "@tanstack/react-query";
 import {
+  getConnectedAccount,
   getDashboard,
   getReservation,
   getRoomById,
   getRooms,
   getTasks,
+  multiverndorservice,
   ReservedUsersDetails,
 } from "./fetch.service";
 import { useCurrentUser } from "./queryes";
+export const useGetMultivendorStatss = () => {
+  return useQuery({
+    queryKey: ["user-multivendor"],
+    queryFn: () => multiverndorservice(),
+    staleTime: 100000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: true,
+    refetchOnReconnect: true,
+    retry: false,
+  });
+};
 
+export const useGetConnectedAccounts = () => {
+  const { data } = useCurrentUser();
+  const vendorId = data?.data?.vendor.vendorId;
+  return useQuery({
+    queryKey: ["user-getConnectedAccounts", vendorId],
+    queryFn: () => getConnectedAccount(vendorId),
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+    refetchOnMount: true,
+    refetchOnReconnect: true,
+    retry: false,
+    enabled: !!vendorId,
+  });
+};
 export const useGetDashboard = (reservationDays?: number) => {
   return useQuery({
     queryKey: ["user-getDashboard"],
@@ -30,7 +57,7 @@ export const useGetReservedUserData = (id: string) => {
     refetchOnMount: true,
     refetchOnReconnect: true,
     retry: false,
-    enabled:!!id
+    enabled: !!id,
   });
 };
 export const useGetTasks = () => {

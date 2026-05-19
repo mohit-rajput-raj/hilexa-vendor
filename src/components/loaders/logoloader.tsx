@@ -1,4 +1,4 @@
-// components/LogoLoader.tsx
+
 'use client'
 
 import Image from 'next/image'
@@ -11,7 +11,7 @@ interface LogoLoaderProps {
 
 export default function LogoLoader({ className, size = 80 }: LogoLoaderProps) {
   return (
-    <div 
+    <div
       className={cn(
         "fixed inset-0 z-50 flex items-center justify-center bg-background backdrop-blur-sm",
         className
@@ -20,7 +20,7 @@ export default function LogoLoader({ className, size = 80 }: LogoLoaderProps) {
       <div className="relative flex flex-col items-center gap-3">
         <div className="animate-float">
           <Image
-            src="/logo.png"          
+            src="/logo.png"
             alt="Loading..."
             width={size}
             height={size}
@@ -28,7 +28,7 @@ export default function LogoLoader({ className, size = 80 }: LogoLoaderProps) {
             className="drop-shadow-xl"
           />
         </div>
-        
+
         <div className="absolute inset-[-20%] rounded-full border-border border animate-ping-slow" />
       </div>
     </div>

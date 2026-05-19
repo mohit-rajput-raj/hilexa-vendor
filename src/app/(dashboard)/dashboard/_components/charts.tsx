@@ -10,7 +10,7 @@ import {
 import { DashboardData, ReservationChartItem, RevenueChartItem } from "../page";
 import { BookingsDataTable } from "./bookingList";
 import { useGetDashboard } from "@/services/tanstack.query";
-import { PageSkeleton } from "../../rooms/_components/details.skeleton";
+import { PageSkeleton } from "../../(categories)/rooms/_components/details.skeleton";
 import {
   TooltipContent,
   TooltipProvider,
@@ -65,17 +65,17 @@ export function HotelDashboard({ reservationDays }: { reservationDays: number | 
 
   const segments = [
     { label: "Occupied", value: dash.roomSummary.occupiedRooms, color: "bg-emerald-100" },
-    { label: "AvailableRooms", value:dash.roomSummary.availableRooms, color: "bg-yellow-100" },
+    { label: "AvailableRooms", value: dash.roomSummary.availableRooms, color: "bg-yellow-100" },
     // { label: "TotalRooms", value: dash.roomSummary.totalRooms, color: "bg-violet-500" },
     { label: "Not Ready", value: 0, color: "bg-lime-200" },
   ];
 
   return (
     <TooltipProvider delayDuration={100}>
-      <div className="min-h-screen space-y-6 font-sans">
+      <div className="min-h-screen space-y-2 font-sans">
 
         {/* Top Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
 
           {/* Room Availability */}
           <Card className="col-span-1 border-none shadow-sm ">

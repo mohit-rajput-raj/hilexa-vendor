@@ -44,26 +44,26 @@ export interface PriceSummary {
   paymentStatus: "paid" | "pending" | "failed" | "refunded";
 }
 
-export default function DashboardPage({id}:{id:string}) {
-  const {data:d, isLoading} = useGetReservedUserData(id)
-  if(isLoading)return <PageSkeleton/>
-  const data=d  
-  
-  
+export default function DashboardPage({ id }: { id: string }) {
+  const { data: d, isLoading } = useGetReservedUserData(id)
+  if (isLoading) return <PageSkeleton />
+  const data = d
+
+
   return (
     <div className="min-h-screen bg-muted/30 p-6">
       <div className="grid grid-cols-12 gap-6">
-        
+
         <div className="col-span-12 lg:col-span-3">
-          <ProfileCard data={data?.data}/>
+          <ProfileCard data={data?.data} />
         </div>
 
         <div className="col-span-12 lg:col-span-6">
-          <BookingInfoCard  data={data?.data}/>
+          <BookingInfoCard data={data?.data} />
         </div>
 
         <div className="col-span-12 lg:col-span-3">
-          <RoomInfoCard  data={data?.data}/>
+          <RoomInfoCard data={data?.data} />
         </div>
       </div>
 
@@ -78,7 +78,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 
-export function ProfileCard({data}:{data:BookingDetail}) {
+export function ProfileCard({ data }: { data: BookingDetail }) {
   return (
     <Card className="rounded-2xl">
       <CardHeader>
@@ -149,8 +149,8 @@ export function BookingInfoCard({ data }: { data: BookingDetail }) {
     <Card className="rounded-2xl shadow-sm border-muted">
       <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-6">
         <div>
-          <Badge 
-            variant={data.status === 'confirmed' ? 'default' : 'secondary'} 
+          <Badge
+            variant={data.status === 'confirmed' ? 'default' : 'secondary'}
             className="mb-2 capitalize"
           >
             {data.status}
@@ -174,13 +174,13 @@ export function BookingInfoCard({ data }: { data: BookingDetail }) {
         <div className="grid grid-cols-2 md:grid-cols-3 gap-y-6 gap-x-4 text-sm">
           <Info label="Room Type" value={data.room.roomType} />
           <Info label="Room Number" value={data.room.roomNumber || "Pending"} />
-          <Info 
-            label="Price" 
-            value={`₹${data.priceSummary.pricePerNight.toLocaleString('en-IN')}`} 
+          <Info
+            label="Price"
+            value={`₹${data.priceSummary.pricePerNight.toLocaleString('en-IN')}`}
           />
-          <Info 
-            label="Guests" 
-            value={`${data.guests.adults} Adults, ${data.guests.children} ${data.guests.children === 1 ? 'Child' : 'Children'}`} 
+          <Info
+            label="Guests"
+            value={`${data.guests.adults} Adults, ${data.guests.children} ${data.guests.children === 1 ? 'Child' : 'Children'}`}
           />
           {/* FIXED DATES HERE */}
           <Info label="Check In" value={formatDate(data.checkIn)} />
@@ -220,7 +220,7 @@ function Info({ label, value }: { label: string; value: string }) {
 import Image from "next/image"
 
 
-export function RoomInfoCard({data}:{data:BookingDetail}) {
+export function RoomInfoCard({ data }: { data: BookingDetail }) {
   return (
     <Card className="rounded-2xl overflow-hidden shadow-none bg-background border border-border ">
       <CardHeader>
@@ -246,29 +246,29 @@ export function RoomInfoCard({data}:{data:BookingDetail}) {
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
             <span>Price Per Night</span>
-            <span><Rupee/>{data.priceSummary.pricePerNight}</span>
+            <span><Rupee />{data.priceSummary.pricePerNight}</span>
           </div>
           <div className="flex justify-between">
             <span>Tax Amount</span>
-            <span><Rupee/>{data.priceSummary.taxAmount}</span>
+            <span><Rupee />{data.priceSummary.taxAmount}</span>
           </div>
           <div className="flex justify-between">
             <span>Cleaning Fee</span>
-            <span><Rupee/>{data.priceSummary.cleaningFee}</span>
+            <span><Rupee />{data.priceSummary.cleaningFee}</span>
           </div>
           <div className="flex justify-between">
             <span>Discount Amount</span>
-            <span><Rupee/>{data.priceSummary.discountAmount}</span>
+            <span><Rupee />{data.priceSummary.discountAmount}</span>
           </div>
           <div className="flex justify-between font-semibold">
             <span>Total</span>
-            <span><Rupee/>{data.priceSummary.totalAmount}</span>
+            <span><Rupee />{data.priceSummary.totalAmount}</span>
           </div>
         </div>
 
         <div className="flex gap-3 px-2">
           <Badge className="bg-purple-500">Paid</Badge>
-        <Badge className="bg-red-500">{data.priceSummary.paymentStatus}</Badge>
+          <Badge className="bg-red-500">{data.priceSummary.paymentStatus}</Badge>
         </div>
       </CardContent>
     </Card>
@@ -284,7 +284,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { useGetReservedUserData } from "@/services/tanstack.query"
-import { PageSkeleton } from "../../rooms/_components/details.skeleton";
+import { PageSkeleton } from "../../(categories)/rooms/_components/details.skeleton";
 import Rupee from "@/components/rupee";
 
 
