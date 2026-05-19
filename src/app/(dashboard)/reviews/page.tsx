@@ -1,11 +1,11 @@
-import  { Suspense } from "react";
+import { Suspense } from "react";
 import { CustomerReviewsSection } from "./_components/customer-review-card";
 // import { ReviewsMap } from "./_components/map-section";
 import { OverallRating } from "./_components/overall-rating";
 import { ReviewStatistics } from "./_components/review-statics";
 import { ErrorBoundary } from "react-error-boundary";
-import { MessageModal } from "../rooms/_components/full-frame";
-import { PageSkeleton } from "../rooms/_components/details.skeleton";
+import { MessageModal } from "../(categories)/rooms/_components/full-frame";
+import { PageSkeleton } from "../(categories)/rooms/_components/details.skeleton";
 // import { ChartBarMultiple } from './_components/review-statics'
 import { Verify } from '@/app/(auth)/authMiddleware'
 

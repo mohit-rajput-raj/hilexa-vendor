@@ -35,8 +35,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { usedownloadInvoice, useGetInvoices } from "./query";
-import { MessageModal } from "../rooms/_components/full-frame";
-import { PageSkeleton } from "../rooms/_components/details.skeleton";
+import { MessageModal } from "../(categories)/rooms/_components/full-frame";
+import { PageSkeleton } from "../(categories)/rooms/_components/details.skeleton";
 import { Spinner } from "@/components/ui/spinner";
 import { IconRefresh } from "@tabler/icons-react";
 import { downloadInvoice } from "./invoice.service";
@@ -44,7 +44,7 @@ import { downloadInvoice } from "./invoice.service";
 
 export type Booking = {
   guestName: string;
-  downloadId:string;
+  downloadId: string;
   bookingId: string;
   room: string;
   pricePerNight: number;
@@ -53,7 +53,7 @@ export type Booking = {
   status: "Paid" | "Unpaid" | "Partial" | "Cancelled";
 };
 type ResponseBooking = {
-  bookingId:string,
+  bookingId: string,
   bookingReference: string;
   guestName: string;
   room: string;
@@ -183,7 +183,7 @@ export const columns: ColumnDef<Booking>[] = [
   //     </div>
   //   ),
   // },
- {
+  {
     id: "actions",
     header: () => <div className="text-right pr-4">Action</div>,
     cell: ({ row, table }) => {
@@ -195,9 +195,9 @@ export const columns: ColumnDef<Booking>[] = [
 
       return (
         <div className="flex items-center justify-end gap-2 pr-2">
-          <Button 
-            variant="ghost" 
-            size="icon" 
+          <Button
+            variant="ghost"
+            size="icon"
             className="h-8 w-8"
             onClick={() => meta?.onDownload(booking.downloadId)}
           >
@@ -216,40 +216,40 @@ export function InvoiceTbale() {
   );
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
-  const { data, isLoading , refetch, isRefetching} = useGetInvoices();
+  const { data, isLoading, refetch, isRefetching } = useGetInvoices();
   const t = data?.data;
 
-const rawdata: Booking[] = React.useMemo(() => {
+  const rawdata: Booking[] = React.useMemo(() => {
     return t?.data?.map((item: ResponseBooking) => ({
       guestName: item.guestName,
       bookingId: item.bookingReference,
-      downloadId:item.bookingId,
+      downloadId: item.bookingId,
       room: item.room,
       pricePerNight: item.pricePerNight,
       duration: item.nights,
       amount: item.nights * item.pricePerNight,
       status: item.paymentStatus === "paid" ? "Paid"
-             : item.paymentStatus === "pending" ? "Unpaid"
-             : item.paymentStatus === "failed" ? "Cancelled"
-             : "Unpaid",  
+        : item.paymentStatus === "pending" ? "Unpaid"
+          : item.paymentStatus === "failed" ? "Cancelled"
+            : "Unpaid",
     }));
   }, [t]);
-  const tableData = rawdata || [] as Booking[] ;
+  const tableData = rawdata || [] as Booking[];
 
   // 1. The Download Logic
   const handleDownload = (id: string) => {
     try {
       const res = downloadInvoice(id)
-      
+
     } catch (error) {
       console.error("Download failed", error);
     }
   };
-  
+
 
 
   const table = useReactTable({
-    data: tableData ,
+    data: tableData,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -287,11 +287,11 @@ const rawdata: Booking[] = React.useMemo(() => {
             <span className="ml-2">▼</span>
           </Button>
           <Button variant="outline" className="w-[120px] justify-between" onClick={() => refetch()} disabled={isRefetching}>
-           { isRefetching ? <IconRefresh className="animate-spin " /> : <IconRefresh />}
+            {isRefetching ? <IconRefresh className="animate-spin " /> : <IconRefresh />}
             {
               isRefetching ? "Refreshing..." : "Refresh"
             }
-            
+
           </Button>
         </div>
 
@@ -339,9 +339,9 @@ const rawdata: Booking[] = React.useMemo(() => {
                     {header.isPlaceholder
                       ? null
                       : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
-                        )}
+                        header.column.columnDef.header,
+                        header.getContext(),
+                      )}
                   </TableHead>
                 ))}
               </TableRow>
@@ -367,7 +367,7 @@ const rawdata: Booking[] = React.useMemo(() => {
                   colSpan={columns.length}
                   className="h-[300px] text-center w-full flex justify-center items-center"
                 >
-                  {(isLoading || isRefetching)?<Spinner/>:"No bookings found."}
+                  {(isLoading || isRefetching) ? <Spinner /> : "No bookings found."}
                 </TableCell>
               </TableRow>
             )}
@@ -385,7 +385,7 @@ const rawdata: Booking[] = React.useMemo(() => {
           –
           {Math.min(
             (table.getState().pagination.pageIndex + 1) *
-              table.getState().pagination.pageSize,
+            table.getState().pagination.pageSize,
             table.getFilteredRowModel().rows.length,
           )}{" "}
           of {table.getFilteredRowModel().rows.length}

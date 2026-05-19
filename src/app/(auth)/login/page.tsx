@@ -19,8 +19,8 @@ import { useRouter } from "next/navigation"
 import { useEffect } from "react"
 import { ErrorBoundary } from "react-error-boundary"
 import { Suspense } from "react"
-import { MessageModal } from "@/app/(dashboard)/rooms/_components/full-frame"
-import { PageSkeleton } from "@/app/(dashboard)/rooms/_components/details.skeleton"
+import { MessageModal } from "@/app/(dashboard)/(categories)/rooms/_components/full-frame"
+import { PageSkeleton } from "@/app/(dashboard)/(categories)/rooms/_components/details.skeleton"
 import { useAuthStore } from "@/stores/auth.store"
 export default function LoginPage() {
   const router = useRouter()

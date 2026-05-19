@@ -1,10 +1,51 @@
 // import { data } from "@/app/(dashboard)/reservation/_components/data"
-import { NewRoomProps } from "@/app/(dashboard)/rooms/new/zod-schema";
+import { NewRoomProps } from "@/app/(dashboard)/(categories)/rooms/new/zod-schema";
 import { axiosApi } from "@/lib/axios";
 
+// export const VendorSwitchAccount = async (id: String) => {
+
+// };
+export const VendorAccountsConnectAccount = async (data: FormData) => {
+  try {
+    const res = await axiosApi.post("/vendor-accounts/connect-account", {
+      email: data.get("email"),
+      password: data.get("password"),
+    });
+    return res.data;
+  } catch (error) {
+    return [];
+  }
+};
+export const getConnectedAccount = async (vendorId: string | undefined) => {
+  try {
+    if (!vendorId) {
+      return [];
+    }
+    const res = await axiosApi.get("/vendor-accounts/connected-accounts", {
+      params: { vendorId: vendorId },
+    });
+    return res.data;
+  } catch (error) {
+    return [];
+  }
+};
 export const addRooms = async (data: NewRoomProps) => {
   const res = await axiosApi.post("/room-types/auto", data);
   return res.data;
+};
+export const multiverndorservice = async () => {
+  try {
+    const res = await axiosApi.get(`/multi-service-vendor/dashboard/stats`, {
+      params: {
+        serviceType: "cabs",
+        range: "week",
+      },
+    });
+
+    return res.data;
+  } catch (error) {
+    return error;
+  }
 };
 export const getDashboard = async (params?: { reservationDays?: number }) => {
   try {
@@ -45,10 +86,10 @@ export const createTsk = async (data: {
   return res.data;
 };
 
-export const ReservedUsersDetails =async (id:string)=>{
-  const res = await axiosApi(`/vendors/bookings/${id}`)
+export const ReservedUsersDetails = async (id: string) => {
+  const res = await axiosApi(`/vendors/bookings/${id}`);
   return res.data;
-}
+};
 export const updateTask = async ({
   data,
   id,

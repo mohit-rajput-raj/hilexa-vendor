@@ -1,7 +1,7 @@
 import React, { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import { PageSkeleton } from "../rooms/_components/details.skeleton";
-import { MessageModal } from "../rooms/_components/full-frame";
+import { PageSkeleton } from "../(categories)/rooms/_components/details.skeleton";
+import { MessageModal } from "../(categories)/rooms/_components/full-frame";
 import MainCalenderFrame from "./_component/hotel-types";
 
 type Props = {};
@@ -11,8 +11,8 @@ const page = (props: Props) => {
 
 
 
-  
-  
+
+
   return (
     <ErrorBoundary
       fallback={
@@ -21,7 +21,7 @@ const page = (props: Props) => {
     >
       <Suspense fallback={<PageSkeleton />}>
         <div className="flex gap-4 w-full h-screen overflow-scroll">
-          <MainCalenderFrame/>
+          <MainCalenderFrame />
         </div>
       </Suspense>
     </ErrorBoundary>
