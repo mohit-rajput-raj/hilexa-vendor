@@ -5,7 +5,7 @@ import { useState, useEffect, useTransition, useId } from "react"
 import { Users, Check, LogInIcon, BikeIcon, MountainIcon, SwordIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { useQueryClient } from "@tanstack/react-query"
+import { QueryObserverResult, useQueryClient } from "@tanstack/react-query"
 import { usePathname, useRouter } from "next/navigation"
 
 import {
@@ -57,43 +57,8 @@ import { toast } from "sonner"
 import { Label } from "./ui/label"
 import { Input } from "./ui/input"
 import { useGetConnectedAccounts } from "@/services/tanstack.query"
-const accounts = [
-  {
-    id: "hotel",
-    name: "Joylan Dorwart",
-    email: "admin@gmail.com",
-    avatar: "/girl.png",
-    role: "Hotel vendor",
-  },
-  {
-    id: "cabs",
-    name: "JD Properties",
-    email: "billing@jdproperties.com",
-    avatar: "",
-    role: "Cab vendor",
-  },
-  {
-    id: "bikes",
-    name: "Personal Account",
-    email: "joylan.personal@gmail.com",
-    avatar: "",
-    role: "Bike vendor",
-  },
-  {
-    id: "tours",
-    name: "JD Properties",
-    email: "billing@jdproperties.com",
-    avatar: "",
-    role: "Tour vendor",
-  },
-  {
-    id: "adventures",
-    name: "Personal Account",
-    email: "joylan.personal@gmail.com",
-    avatar: "",
-    role: "Adventure vendor",
-  },
-]
+import { useAuthStore } from "@/stores/auth.store"
+
 
 export function NavUser() {
   const router = useRouter()
@@ -197,7 +162,7 @@ export function SwitchAccountButton() {
   const [loading, setLoading] = useState(false)
   const [open, setOpen] = React.useState(false)
   const [activeId, setActiveId] = React.useState("hotel")
-  const { data } = useGetConnectedAccounts();
+  const { data, refetch } = useGetConnectedAccounts();
   const { switchAccount } = useAuthStore()
   // console.log(data.data);
 
@@ -209,6 +174,9 @@ export function SwitchAccountButton() {
       setActiveId(savedCategory)
     }
   }, [])
+
+
+
 
   const handleSwitch = async (id: string, cat: string) => {
     const privid = activeId;
@@ -342,7 +310,7 @@ const DialogSignInDemo = () => {
   const router = useRouter();
   const { data: user } = useCurrentUser();
   const vendorId = user?.data?.vendor.vendorId;
-
+  const { refetch } = useGetConnectedAccounts();
   const [formDataaa, setFormData] = useState({
     email: "",
     password: ""
@@ -376,6 +344,7 @@ const DialogSignInDemo = () => {
           toast.success("Connected successfully!");
           // Optional: Reset form fields on success
           setFormData({ email: "", password: "" });
+          refetch();
         }
       } catch (error) {
         console.error(error);
@@ -454,128 +423,4 @@ export default DialogSignInDemo
 
 
 
-
-
-
-import {
-  ChevronsUpDownIcon,
-  DollarSignIcon,
-  FactoryIcon,
-  FilmIcon,
-  HospitalIcon,
-  HotelIcon,
-  MonitorIcon,
-  ScaleIcon,
-  SchoolIcon,
-  TractorIcon,
-  ZapIcon
-} from 'lucide-react'
-
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList
-} from '@/components/ui/command'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { useAuthStore } from "@/stores/auth.store"
-
-const industries = [
-  {
-    value: 'Hotels',
-    label: 'Hotels',
-    icon: HotelIcon
-  },
-  {
-    value: 'Cabs',
-    label: 'Cabs',
-    icon: HospitalIcon
-  },
-  {
-    value: 'Bikes',
-    label: 'Bikes',
-    icon: BikeIcon
-  },
-  {
-    value: 'Tours',
-    label: 'Tours',
-    icon: MountainIcon
-  },
-  {
-    value: 'Adventures',
-    label: 'Adventures',
-    icon: SwordIcon
-  },
-
-]
-
-const ComboboxOptionWithIIconDemo = () => {
-  const id = useId()
-  const [open, setOpen] = useState<boolean>(false)
-  const [value, setValue] = useState<string>('')
-
-  return (
-    <div className='w-full max-w-xs space-y-2'>
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            id={id}
-            variant='outline'
-            role='combobox'
-            aria-expanded={open}
-            className='bg-background hover:bg-background border-input w-full justify-between px-3 font-normal outline-offset-0 outline-none focus-visible:outline-[3px]'
-          >
-            {value ? (
-              <span className='flex min-w-0 items-center gap-2'>
-                {(() => {
-                  const selectedItem = industries.find(industry => industry.value === value)
-
-                  if (selectedItem) {
-                    const Icon = selectedItem.icon
-
-                    return <Icon className='text-muted-foreground' />
-                  }
-
-                  return null
-                })()}
-                <span className='truncate'>{industries.find(industry => industry.value === value)?.label}</span>
-              </span>
-            ) : (
-              <span className='text-muted-foreground'>Select industry category</span>
-            )}
-            <ChevronsUpDownIcon className='text-muted-foreground/80 shrink-0' aria-hidden='true' />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className='border-input w-full min-w-[var(--radix-popper-anchor-width)] p-0' align='start'>
-          <Command>
-            <CommandInput placeholder='Search industries...' />
-            <CommandList>
-              <CommandEmpty>No industry found.</CommandEmpty>
-              <CommandGroup>
-                {industries.map(industry => (
-                  <CommandItem
-                    key={industry.value}
-                    value={industry.value}
-                    onSelect={currentValue => {
-                      setValue(currentValue === value ? '' : currentValue)
-                      setOpen(false)
-                    }}
-                    className='flex items-center justify-between'
-                  >
-                    <div className='flex items-center gap-2'>
-                      <industry.icon className='text-muted-foreground size-4' />
-                      {industry.label}
-                    </div>
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            </CommandList>
-          </Command>
-        </PopoverContent>
-      </Popover>
-    </div>
-  )
-}
 
