@@ -39,7 +39,7 @@ interface AuthStates {
   hotel: { _id: string; name: string };
   draft: boolean;
   userLogin: (data: Login_signup_Data) => Promise<any>;
-  switchAccount: (id: string) => Promise<any>;
+  switchAccount: (id: string, cat: string) => Promise<any>;
   userSignup: (data: Login_signup_Data) => Promise<any>;
   verifyOTP: (data: { email: string; otp: string }) => Promise<any>;
   resendOTP: (email: string) => Promise<any>;
@@ -85,7 +85,7 @@ export const useAuthStore = create<AuthStates>()(
       hotel: { _id: "", name: "" },
       draft: true,
 
-      switchAccount: async (id: string) => {
+      switchAccount: async (id: string, cat: string) => {
         console.log("don");
 
         set({ isLoging: true });
@@ -98,6 +98,7 @@ export const useAuthStore = create<AuthStates>()(
             const status = res.data.vendor.status;
             localStorage.setItem("accessToken", token);
             localStorage.setItem("status", status);
+            localStorage.setItem("category", cat);
 
             return {
               success: true,
@@ -123,6 +124,7 @@ export const useAuthStore = create<AuthStates>()(
             const status = res.data.data.vendor.status;
             localStorage.setItem("accessToken", token);
             localStorage.setItem("status", status);
+            localStorage.setItem("category", res.data.data.vendor.serviceType);
             set({
               draft: ["draft", "pending", "rejected"].includes(
                 res.data.data.vendor.status,

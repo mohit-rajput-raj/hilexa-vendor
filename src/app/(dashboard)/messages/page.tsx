@@ -1,7 +1,7 @@
 import React, { Suspense } from 'react'
 import ChatDashboard from './_components/messages'
 import { ErrorBoundary } from 'react-error-boundary'
-import { MessageModal } from '../(categories)/rooms/_components/full-frame'
+import { MessageModal } from '../(categories)/rooms/_components/RoomsListing'
 import { PageSkeleton } from '../(categories)/rooms/_components/details.skeleton'
 import { Verify } from '@/app/(auth)/authMiddleware'
 
