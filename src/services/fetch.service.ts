@@ -2,9 +2,79 @@
 import { NewRoomProps } from "@/app/(dashboard)/(categories)/rooms/new/zod-schema";
 import { axiosApi } from "@/lib/axios";
 
-// export const VendorSwitchAccount = async (id: String) => {
+//cab
+export const addCabService = async (data: any) => {
+  const res = await axiosApi.post("/cab-services/vendor/cab-services", data);
+  return res.data;
+};
+export const updateCabServices = async (id: string, data: any) => {
+  const res = await axiosApi.put(
+    `/cab-services/vendor/cab-services/${id}`,
+    data,
+  );
+  return res.data;
+};
+export const getCabsServices = async () => {
+  const res = await axiosApi.get("/cab-services/vendor/cab-services");
+  return res.data;
+};
+export const getCabServiceDetailsById = async (id: string) => {
+  const res = await axiosApi.get(`/cab-services/vendor/cab-services/${id}`);
+  return res.data;
+};
 
+//bike
+export const addbikeService = async (data: any) => {
+  const res = await axiosApi.post("/bike-services/vendor/bike-services", data);
+  return res.data;
+};
+export const updatebikeService = async (id: string, data: any) => {
+  const res = await axiosApi.put(
+    `/bike-services/vendor/bike-services/${id}`,
+    data,
+  );
+  return res.data;
+};
+export const getBikesServices = async () => {
+  const res = await axiosApi.get("/bike-services/vendor/bike-services");
+  return res.data;
+};
+export const getBikeServiceDetailsById = async (id: string) => {
+  const res = await axiosApi.get(`/bike-services/vendor/bike-services/${id}`);
+  return res.data;
+};
+
+//tour
+export const addTourService = async (data: any) => {
+  const res = await axiosApi.post("/tour-services/vendor/tour-services", data);
+  return res.data;
+};
+export const updateTourService = async (id: string, data: any) => {
+  const res = await axiosApi.put(
+    `/tour-services/vendor/tour-services/${id}`,
+    data,
+  );
+  return res.data;
+};
+export const getToursServices = async () => {
+  const res = await axiosApi.get("/tour-services/vendor/tour-services");
+  return res.data;
+};
+export const getTourServiceDetailsById = async (id: string) => {
+  const res = await axiosApi.get(`/tour-services/vendor/tour-services/${id}`);
+  return res.data;
+};
+
+//adventure
+// export const addAdventureService = async (data: any) => {
+//   const res = await axiosApi.post(
+//     "/adventure-services/vendor/adventure-services",
+//     data,
+//   );
+//   return res.data;
 // };
+
+/////////////////////////
 export const VendorAccountsConnectAccount = async (data: FormData) => {
   try {
     const res = await axiosApi.post("/vendor-accounts/connect-account", {

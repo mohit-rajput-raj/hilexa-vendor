@@ -9,8 +9,88 @@ import {
   getTasks,
   multiverndorservice,
   ReservedUsersDetails,
+  getCabsServices,
+  getBikesServices,
+  getToursServices,
+  getCabServiceDetailsById,
+  getBikeServiceDetailsById,
+  getTourServiceDetailsById,
 } from "./fetch.service";
 import { useCurrentUser } from "./queryes";
+
+//cab
+export const useGetCabsServices = () => {
+  return useQuery({
+    queryKey: ["user-getCabsServices"],
+    queryFn: () => getCabsServices(),
+    staleTime: 100000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: true,
+    refetchOnReconnect: true,
+    retry: false,
+  });
+};
+export const useGetCabServiceDetailsById = (id: string) => {
+  return useQuery({
+    queryKey: ["user-getCabServiceDetailsById", id],
+    queryFn: () => getCabServiceDetailsById(id),
+    staleTime: 100000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: true,
+    refetchOnReconnect: true,
+    retry: false,
+    enabled: !!id,
+  });
+};
+//bike
+export const useGetBikesServices = () => {
+  return useQuery({
+    queryKey: ["user-getBikesServices"],
+    queryFn: () => getBikesServices(),
+    staleTime: 100000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: true,
+    refetchOnReconnect: true,
+    retry: false,
+  });
+};
+export const useGetBikeServiceDetailsById = (id: string) => {
+  return useQuery({
+    queryKey: ["user-getBikeServiceDetailsById", id],
+    queryFn: () => getBikeServiceDetailsById(id),
+    staleTime: 100000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: true,
+    refetchOnReconnect: true,
+    retry: false,
+    enabled: !!id,
+  });
+};
+//tour
+export const useGetToursServices = () => {
+  return useQuery({
+    queryKey: ["user-getToursServices"],
+    queryFn: () => getToursServices(),
+    staleTime: 100000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: true,
+    refetchOnReconnect: true,
+    retry: false,
+  });
+};
+export const useGetTourServiceDetailsById = (id: string) => {
+  return useQuery({
+    queryKey: ["user-getTourServiceDetailsById", id],
+    queryFn: () => getTourServiceDetailsById(id),
+    staleTime: 100000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: true,
+    refetchOnReconnect: true,
+    retry: false,
+    enabled: !!id,
+  });
+};
+/////////////////////////////////////////////////////////////////////
 export const useGetMultivendorStatss = () => {
   return useQuery({
     queryKey: ["user-multivendor"],

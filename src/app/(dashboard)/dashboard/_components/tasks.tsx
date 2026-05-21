@@ -207,7 +207,7 @@ import { ReactNode, useState } from "react";
 import { IconPencil, IconTrash } from "@tabler/icons-react";
 import { deleteTask, updateTask } from "@/services/fetch.service";
 import { Spinner } from "@/components/ui/spinner";
-import { MessageModal } from "../../(categories)/rooms/_components/full-frame";
+import { MessageModal } from "../../(categories)/rooms/_components/RoomsListing";
 import { PageSkeleton } from "../../(categories)/rooms/_components/details.skeleton";
 
 export function DropdownMenuIcons({ trigger, task, refetch }: { trigger: ReactNode, task: ITask, refetch: () => void }) {

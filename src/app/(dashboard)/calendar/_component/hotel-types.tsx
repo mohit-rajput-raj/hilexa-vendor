@@ -25,7 +25,7 @@ type hoteTypesPropos = {
 };
 
 import BigCalender from "./big-calander";
-import { MessageModal } from "../../(categories)/rooms/_components/full-frame";
+import { MessageModal } from "../../(categories)/rooms/_components/RoomsListing";
 
 type Props = {};
 

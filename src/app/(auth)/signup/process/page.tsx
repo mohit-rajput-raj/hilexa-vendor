@@ -392,7 +392,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { FieldDescription } from "@/components/ui/field";
 import { Form } from "@/components/ui/form";
-import { MessageModal } from "@/app/(dashboard)/(categories)/rooms/_components/full-frame";
+import { MessageModal } from "@/app/(dashboard)/(categories)/rooms/_components/RoomsListing";
 import { PageSkeleton } from "@/app/(dashboard)/(categories)/rooms/_components/details.skeleton";
 import AnimatedStepper from "../_components/steeper";
 
