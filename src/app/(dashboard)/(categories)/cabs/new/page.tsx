@@ -25,12 +25,17 @@ import { NewCabProps, NewCabSchema } from "./zod-schema";
 import { addCabService } from "@/services/fetch.service";
 
 const cabTypes = ["luxury", "standard", "premium", "economy", "suv"];
+export default function Page() {
+  return (
+    <AddCabForm />
+  )
+}
 
-export default function AddCabForm({
+const AddCabForm = ({
   setEditMode,
 }: {
   setEditMode?: React.Dispatch<React.SetStateAction<{ id: string; mode: boolean }>>;
-}) {
+}) => {
   const { uploadFile } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);

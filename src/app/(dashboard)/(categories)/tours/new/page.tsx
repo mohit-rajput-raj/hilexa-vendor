@@ -24,11 +24,18 @@ import { toast } from "sonner";
 import { NewTourProps, NewTourSchema } from "./zod-schema";
 import { addTourService } from "@/services/fetch.service";
 
-export default function AddTourForm({
+export default function Page() {
+  return (
+    <AddTourForm />
+  )
+}
+
+
+const AddTourForm = ({
   setEditMode,
 }: {
   setEditMode?: React.Dispatch<React.SetStateAction<{ id: string; mode: boolean }>>;
-}) {
+}) => {
   const { uploadFile } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);

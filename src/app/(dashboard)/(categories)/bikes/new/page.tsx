@@ -38,13 +38,11 @@ const bikeTypes = ["sports", "cruiser", "standard", "scooter", "adventure", "tou
 const fuelTypes = ["petrol", "diesel", "electric"];
 const gearTypes = ["Manual", "Automatic"];
 
-export default function AddBikeForm({
-  setEditMode,
-}: {
+const AddBikeForm = ({ setEditMode, }: {
   setEditMode?: React.Dispatch<
     React.SetStateAction<{ id: string; mode: boolean }>
   >;
-}) {
+}) => {
   const { uploadFile } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -201,9 +199,8 @@ export default function AddBikeForm({
                       ))}
 
                       <label
-                        className={`h-28 w-40 rounded-xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer hover:bg-muted/50 transition-all ${
-                          uploading ? "opacity-60 cursor-not-allowed" : ""
-                        }`}
+                        className={`h-28 w-40 rounded-xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer hover:bg-muted/50 transition-all ${uploading ? "opacity-60 cursor-not-allowed" : ""
+                          }`}
                       >
                         <Input
                           type="file"
@@ -535,4 +532,10 @@ export default function AddBikeForm({
       </form>
     </Form>
   );
+}
+
+export default function Page() {
+  return (
+    <AddBikeForm />
+  )
 }
