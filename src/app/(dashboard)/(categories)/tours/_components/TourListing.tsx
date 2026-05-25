@@ -29,10 +29,10 @@ import {
     ChevronRight,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { PageSkeleton } from "./details.skeleton";
+import { PageSkeleton } from "../../rooms/_components/details.skeleton";
 import { useAllRooms, useRoomById } from "@/services/tanstack.query";
-import { EditRoom } from "./edit-room-sheet";
-import AddRoomForm from "../new/page";
+import { EditRoom } from "../../rooms/_components/edit-room-sheet";
+import AddRoomForm from "../../rooms/new/page";
 
 export type BedType = {
     _id: string;
@@ -421,7 +421,7 @@ export function TourListing() {
 }
 
 import { Building2 } from "lucide-react";
-import EditRoomForm from "./edit-room-form";
+import EditRoomForm from "../../rooms/_components/edit-room-form";
 import { cn } from "@/lib/utils";
 import { useCurrentUser } from "@/services/queryes";
 import Rupee from "@/components/rupee";

@@ -31,7 +31,7 @@ import {
     Calendar,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { PageSkeleton } from "./details.skeleton";
+import { PageSkeleton } from "../../rooms/_components/details.skeleton";
 import { useGetCabsServices, useGetCabServiceDetailsById } from "@/services/tanstack.query";
 import EditCabForm from "./edit-cab-form";
 import { cn } from "@/lib/utils";
@@ -148,7 +148,7 @@ export function CabListing() {
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="popular">Popular</SelectItem>
-                               <SelectItem value="price-low">Price: Low to High</SelectItem>
+                                <SelectItem value="price-low">Price: Low to High</SelectItem>
                                 <SelectItem value="price-high">Price: High to Low</SelectItem>
                             </SelectContent>
                         </Select>

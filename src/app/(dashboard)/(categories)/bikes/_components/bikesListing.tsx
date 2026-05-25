@@ -31,7 +31,7 @@ import {
     Gauge,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { PageSkeleton } from "./details.skeleton";
+import { PageSkeleton } from "../../rooms/_components/details.skeleton";
 import { useGetBikesServices, useGetBikeServiceDetailsById } from "@/services/tanstack.query";
 import EditBikeForm from "./edit-bike-form";
 import { cn } from "@/lib/utils";

@@ -15,6 +15,8 @@ import {
   getCabServiceDetailsById,
   getBikeServiceDetailsById,
   getTourServiceDetailsById,
+  getAdventuresServices,
+  getAdventureServiceDetailsById,
 } from "./fetch.service";
 import { useCurrentUser } from "./queryes";
 
@@ -82,6 +84,30 @@ export const useGetTourServiceDetailsById = (id: string) => {
   return useQuery({
     queryKey: ["user-getTourServiceDetailsById", id],
     queryFn: () => getTourServiceDetailsById(id),
+    staleTime: 100000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: true,
+    refetchOnReconnect: true,
+    retry: false,
+    enabled: !!id,
+  });
+};
+//adventure
+export const useGetAdventuresServices = () => {
+  return useQuery({
+    queryKey: ["user-getAdventuresServices"],
+    queryFn: () => getAdventuresServices(),
+    staleTime: 100000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: true,
+    refetchOnReconnect: true,
+    retry: false,
+  });
+};
+export const useGetAdventureServiceDetailsById = (id: string) => {
+  return useQuery({
+    queryKey: ["user-getAdventureServiceDetailsById", id],
+    queryFn: () => getAdventureServiceDetailsById(id),
     staleTime: 100000,
     refetchOnWindowFocus: false,
     refetchOnMount: true,

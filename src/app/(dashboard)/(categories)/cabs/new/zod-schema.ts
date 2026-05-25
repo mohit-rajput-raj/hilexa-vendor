@@ -2,6 +2,7 @@ import { z } from "zod";
 
 export const NewCabSchema = z
   .object({
+    cabId: z.string(),
     title: z.string().min(1, "Title is required"),
     pickupLocation: z.string().min(1, "Pickup location is required"),
     dropLocation: z.string().min(1, "Drop location is required"),

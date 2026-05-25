@@ -1,8 +1,8 @@
-
 'use client'
 
 import Image from 'next/image'
 import { cn } from "@/lib/utils" // if you have classnames helper
+import React from 'react'
 
 interface LogoLoaderProps {
   className?: string
@@ -10,6 +10,11 @@ interface LogoLoaderProps {
 }
 
 export default function LogoLoader({ className, size = 80 }: LogoLoaderProps) {
+  const [isMounted, setIsMounted] = React.useState(false)
+  React.useEffect(() => {
+    setIsMounted(true)
+    return () => setIsMounted(false)
+  }, [])
   return (
     <div
       className={cn(

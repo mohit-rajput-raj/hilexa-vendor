@@ -21,9 +21,8 @@ import {
 
 import { useAuthStore } from "@/stores/auth.store";
 import { toast } from "sonner";
-import { NewBikeProps, NewBikeSchema } from "../../bikes/new/zod-schema";
+import { NewBikeProps, NewBikeSchema } from "../new/zod-schema";
 import { updatebikeService } from "@/services/fetch.service";
-import { useGetBikeServiceDetailsById } from "@/services/tanstack.query";
 
 const bikeTypes = ["sports", "cruiser", "standard", "scooter", "adventure", "touring"];
 const fuelTypes = ["petrol", "diesel", "electric"];
@@ -41,8 +40,6 @@ export default function EditBikeForm({
   const [uploading, setUploading] = useState(false);
   const [previews, setPreviews] = useState<string[]>([]);
 
-  const { data: bikeDetailsData, isLoading: detailsLoading } = useGetBikeServiceDetailsById(bikeId);
-
   const form = useForm<NewBikeProps>({
     resolver: zodResolver(NewBikeSchema),
     defaultValues: {
@@ -57,42 +54,6 @@ export default function EditBikeForm({
   const { fields: featureFields, append: appendFeature, remove: removeFeature } =
     useFieldArray({ control: form.control, name: "features" as any });
 
-  useEffect(() => {
-    if (bikeDetailsData?.data) {
-      const d = bikeDetailsData.data;
-
-      // Map images from format string[] to { url, public_id, resource_type }[]
-      const mappedImages = (d.images || []).map((img: any) => {
-        if (typeof img === "string") {
-          return { url: img, public_id: "", resource_type: "image" };
-        }
-        return {
-          url: img.url || "",
-          public_id: img.public_id || "",
-          resource_type: img.resource_type || "image"
-        };
-      });
-
-      form.reset({
-        title: d.title || "",
-        bikeName: d.bike?.name || "",
-        bikeType: d.bike?.type || "standard",
-        engineCC: d.bike?.engine || 150,
-        fuelType: d.bike?.fuel || "petrol",
-        pricePerDay: d.pricing?.pricePerDay || 500,
-        discountPrice: d.pricing?.discountPrice || 0,
-        maxDurationDays: d.maxDurationDays || 7,
-        description: d.description || "",
-        features: d.features || [""],
-        images: mappedImages,
-        meta: {
-          mileage: d.meta?.mileage || "",
-          gearType: d.meta?.gearType || "Manual",
-        },
-      });
-    }
-  }, [bikeDetailsData, form]);
-
   useEffect(() => { return () => { previews.forEach((url) => URL.revokeObjectURL(url)); }; }, [previews]);
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -106,9 +67,9 @@ export default function EditBikeForm({
       try {
         const result = await uploadFile(file);
         if (result?.url) {
-          newUrls.push({ url: result.url, public_id: result.public_id || "", resource_type: result.resource_type || "image" });
+          newUrls.push({ url: result.url, public_id: result?.public_id as string || "", resource_type: result?.resource_type as string || "" });
           toast.success(`Uploaded: ${file.name}`);
-        } else { throw new Error("Incomplete upload data received"); }
+        } else { throw new Error("No URL returned"); }
       } catch (err) { console.error("Upload failed:", file.name, err); toast.error(`Failed to upload ${file.name}`); }
     }
     const current = form.getValues("images") || [];
@@ -118,9 +79,9 @@ export default function EditBikeForm({
   };
 
   const removeImage = (index: number) => {
-    setPreviews((prev) => { URL.revokeObjectURL(prev[index]); return prev.filter((_: any, i: number) => i !== index); });
+    setPreviews((prev) => { URL.revokeObjectURL(prev[index]); return prev.filter((_, i) => i !== index); });
     const current = form.getValues("images") || [];
-    form.setValue("images", current.filter((_: any, i: number) => i !== index), { shouldValidate: true });
+    form.setValue("images", current.filter((_, i) => i !== index), { shouldValidate: true });
   };
 
   const onSubmit = async (data: NewBikeProps) => {
@@ -128,20 +89,9 @@ export default function EditBikeForm({
     try {
       await updatebikeService(bikeId, data);
       toast.success("Bike updated successfully!");
-      if (setEditMode) {
-        setEditMode({ id: "", mode: false });
-      }
     } catch (err) { console.error(err); toast.error("Failed to update bike"); }
     finally { setLoading(false); }
   };
-
-  if (detailsLoading) {
-    return (
-      <div className="flex justify-center items-center h-96">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
 
   return (
     <Form {...form}>
@@ -162,12 +112,12 @@ export default function EditBikeForm({
                 <AccordionContent>
                   <div className="space-y-6">
                     <div className="flex flex-wrap gap-4">
-                      {form.watch("images").map((img: any, idx: number) => (
+                      {form.watch("images").map((img, idx) => (
                         <div key={img.url} className="relative group">
                           <div className="h-28 w-40 rounded-xl overflow-hidden border shadow-sm">
                             <Image src={img.url} alt={`Bike image ${idx + 1}`} width={160} height={112} className="object-cover" />
                           </div>
-                          <button type="button" onClick={() => removeImage(idx)} className="absolute -top-2 -right-2 bg-card text-white rounded-full z-4 p-1.5 shadow-md hover:bg-destructive/90" disabled={uploading}><X size={16} /></button>
+                          <button type="button" onClick={() => removeImage(idx)} className="absolute -top-2 -right-2 bg-destructive text-white rounded-full p-1.5 shadow-md hover:bg-destructive/90" disabled={uploading}><X size={16} /></button>
                         </div>
                       ))}
                       <label className={`h-28 w-40 rounded-xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer hover:bg-muted/50 transition-all ${uploading ? "opacity-60 cursor-not-allowed" : ""}`}>
@@ -232,7 +182,7 @@ export default function EditBikeForm({
               <Button type="submit" size="lg" disabled={loading || uploading} className="flex-1">
                 {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Updating...</> : "Update Bike"}
               </Button>
-              <Button type="button" variant="outline" size="lg" onClick={() => { if (setEditMode) setEditMode({ id: "", mode: false }); }} disabled={loading || uploading}>Cancel</Button>
+              <Button type="button" variant="outline" size="lg" onClick={() => { form.reset(); setPreviews([]); }} disabled={loading || uploading}>Reset Form</Button>
             </div>
           </CardContent>
         </Card>
