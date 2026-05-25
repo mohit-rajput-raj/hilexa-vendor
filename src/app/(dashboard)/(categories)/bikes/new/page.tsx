@@ -33,6 +33,7 @@ import { toast } from "sonner";
 import { NewBikeProps, NewBikeSchema } from "./zod-schema";
 import { addbikeService } from "@/services/fetch.service";
 import { PageSkeleton } from "../../rooms/_components/details.skeleton";
+import { useCurrentUser } from "@/services/queryes";
 
 const bikeTypes = ["sports", "cruiser", "standard", "scooter", "adventure", "touring"];
 const fuelTypes = ["petrol", "diesel", "electric"];
@@ -47,10 +48,12 @@ const AddBikeForm = ({ setEditMode, }: {
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [previews, setPreviews] = useState<string[]>([]);
-
+  const { data } = useCurrentUser();
+  console.log(data?.data?.serviceDetails?.id);
   const form = useForm<NewBikeProps>({
     resolver: zodResolver(NewBikeSchema),
     defaultValues: {
+      bikeId: data?.data?.serviceDetails?.id,
       title: "",
       bikeName: "",
       bikeType: "standard",

@@ -23,6 +23,7 @@ import { useAuthStore } from "@/stores/auth.store";
 import { toast } from "sonner";
 import { NewTourProps, NewTourSchema } from "./zod-schema";
 import { addTourService } from "@/services/fetch.service";
+import { useCurrentUser } from "@/services/queryes";
 
 export default function Page() {
   return (
@@ -40,10 +41,11 @@ const AddTourForm = ({
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [previews, setPreviews] = useState<string[]>([]);
-
+  const { data } = useCurrentUser();
   const form = useForm<NewTourProps>({
     resolver: zodResolver(NewTourSchema),
     defaultValues: {
+      tourId: data?.data?.serviceDetails?.id,
       title: "", destinations: [""], duration: { days: 1, nights: 0 },
       basePrice: 1000, discountPrice: 0, description: "", features: [""],
       images: [],

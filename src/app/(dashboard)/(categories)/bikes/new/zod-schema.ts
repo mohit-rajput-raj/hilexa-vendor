@@ -2,6 +2,7 @@ import { z } from "zod";
 
 export const NewBikeSchema = z
   .object({
+    bikeId: z.string().min(1, "Bike ID is required"),
     title: z.string().min(1, "Title is required"),
     bikeName: z.string().min(1, "Bike name is required"),
     bikeType: z.string().min(1, "Bike type is required"),

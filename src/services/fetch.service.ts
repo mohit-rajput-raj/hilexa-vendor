@@ -66,14 +66,22 @@ export const getTourServiceDetailsById = async (id: string) => {
 };
 
 //adventure
-// export const addAdventureService = async (data: any) => {
-//   const res = await axiosApi.post(
-//     "/adventure-services/vendor/adventure-services",
-//     data,
-//   );
-//   return res.data;
-// };
-
+export const addAdventureService = async (data: any) => {
+  const res = await axiosApi.post("/services/vendor/services", data);
+  return res.data;
+};
+export const updateAdventureService = async (id: string, data: any) => {
+  const res = await axiosApi.put(`/services/vendor/services/${id}`, data);
+  return res.data;
+};
+export const getAdventuresServices = async () => {
+  const res = await axiosApi.get("/adventures/vendor/adventures");
+  return res.data;
+};
+export const getAdventureServiceDetailsById = async (id: string) => {
+  const res = await axiosApi.get(`/adventures/vendor/adventures/${id}`);
+  return res.data;
+};
 /////////////////////////
 export const VendorAccountsConnectAccount = async (data: FormData) => {
   try {

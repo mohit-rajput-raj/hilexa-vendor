@@ -6,7 +6,7 @@ import { Verify } from '@/app/(auth)/authMiddleware'
 import { PageSkeleton } from '../rooms/_components/details.skeleton'
 import { MessageModal, RoomListing } from '../rooms/_components/RoomsListing'
 import { useGetBikesServices } from '@/services/tanstack.query'
-import { BikesListing } from '../rooms/_components/bikesListing'
+import { BikesListing } from './_components/bikesListing'
 
 type Props = {}
 

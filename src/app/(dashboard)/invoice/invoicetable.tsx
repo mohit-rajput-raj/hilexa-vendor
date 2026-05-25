@@ -40,6 +40,8 @@ import { PageSkeleton } from "../(categories)/rooms/_components/details.skeleton
 import { Spinner } from "@/components/ui/spinner";
 import { IconRefresh } from "@tabler/icons-react";
 import { downloadInvoice } from "./invoice.service";
+import TablesLoaders from "@/components/loaders/TablesLoaders";
+import DataNotFoundTableComponent from "@/components/dataNotFoundTableComponent";
 
 
 export type Booking = {
@@ -347,30 +349,27 @@ export function InvoiceTbale() {
               </TableRow>
             ))}
           </TableHeader>
-          <TableBody>
-            {table?.getRowModel().rows?.length && !isLoading ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id} className="hover:bg-muted/60">
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
-              <TableRow className="w-full">
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-[300px] text-center w-full flex justify-center items-center"
-                >
-                  {(isLoading || isRefetching) ? <Spinner /> : "No bookings found."}
-                </TableCell>
-              </TableRow>
-            )}
+          <TableBody >
+
+            <TablesLoaders loading={isLoading} rows={10} columns={columns.length}>
+
+              {table?.getRowModel().rows?.length && !isLoading ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow key={row.id} className="">
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <DataNotFoundTableComponent columns={columns.length} isLoading={isLoading} table={table} />
+              )}
+            </TablesLoaders>
           </TableBody>
         </Table>
       </div>

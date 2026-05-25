@@ -1,6 +1,34 @@
 // datatable.tsx
 "use client";
 
+
+import { useState } from "react";
+import { Settings2, Check } from "lucide-react";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
+import { TogglePatchStatus } from "./reservations.service";
+import { Skeleton } from "antd";
+import { ReservationsRowSkeleton } from "@/components/loaders/tableSkeletons";
+
+export type StayOption = "checkin" | "checkout" | "staying";
+
 import * as React from "react";
 import {
   ColumnFiltersState,
@@ -37,13 +65,15 @@ import { Spinner } from "@/components/ui/spinner"; // your spinner component
 import { useUpdateReservationStatus } from "./hook/updateStstus";
 import { useResevatiosnData } from "@/services/tanstack.query";
 import { useRouter } from "next/navigation";
+import TablesLoaders from "@/components/loaders/TablesLoaders";
+import DataNotFoundTableComponent from "@/components/dataNotFoundTableComponent";
 
 // import { useReservationsData } from "@/services/tanstack.query";
 // import { useUpdateReservationStatus } from "@/services/reservationMutations";
 
 export type Status = "confirmed" | "pending" | "Confirmed" | "Pending" | null;
 export type Reservation = {
-  bookingId:string
+  bookingId: string
   bookingReference: string;
   guestName: string;
   roomLabel: string;
@@ -62,8 +92,8 @@ const StatusBadge = React.memo(({ status }: { status: Status }) => {
   return (
     <span
       className={`inline-flex px-3 py-1 rounded-md text-xs font-medium ${isConfirmed
-          ? "bg-[#E6F6F0] text-[#1DB47D]"
-          : "bg-[#FEECEC] text-[#EB5757]"
+        ? "bg-[#E6F6F0] text-[#1DB47D]"
+        : "bg-[#FEECEC] text-[#EB5757]"
         }`}
     >
       {(status || "—").charAt(0).toUpperCase() + (status || "").slice(1)}
@@ -74,16 +104,16 @@ const StatusBadge = React.memo(({ status }: { status: Status }) => {
 const ActionCell = React.memo(({ row }: { row: any }) => {
   const status = row.original.status;
   const { mutate: updateStatus, isPending: isUpdating } = useUpdateReservationStatus();
- const router = useRouter()
+  const router = useRouter()
   return (
     <div className="flex items-center gap-2">
       <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400" onClick={() => router.push(`/reservation/user/${row.original.bookingId}`)}>
-        <Eye className="h-4 w-4"  />
+        <Eye className="h-4 w-4" />
       </Button>
-      
+
       <OptionSelectionDialog id={row.original.bookingId} trigger={<Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400">
         <Pencil className="h-4 w-4" />
-      </Button>}/>
+      </Button>} />
 
       <Button
         variant="outline"
@@ -185,7 +215,7 @@ export function GuestDataTable() {
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
 
-  const { data: queryResult = [] } = useResevatiosnData();
+  const { data: queryResult, isLoading } = useResevatiosnData();
   const reservations = queryResult?.data ?? [];
   // [{
   //             "bookingReference": "BK-F1EBA5D09A5F",
@@ -271,24 +301,25 @@ export function GuestDataTable() {
               </TableRow>
             ))}
           </TableHeader>
+
           <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id}>
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center ">
-                  No reservations found.
-                </TableCell>
-              </TableRow>
-            )}
+
+            <TablesLoaders loading={isLoading} rows={10} columns={columns.length}>
+
+              {table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow key={row.id}>
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <DataNotFoundTableComponent columns={columns.length} isLoading={isLoading} table={table} />
+              )}
+            </TablesLoaders>
           </TableBody>
         </Table>
       </div>
@@ -316,61 +347,35 @@ export function GuestDataTable() {
 }
 
 
-
-import  { useState } from "react";
-import { Settings2, Check } from "lucide-react";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
-import { TogglePatchStatus } from "./reservations.service";
-
-export type StayOption = "checkin"|"checkout"|"staying";
-
-export function OptionSelectionDialog({ 
-  trigger, 
-  id 
-}: { 
-  trigger: React.ReactNode; 
-  id: string; 
+export function OptionSelectionDialog({
+  trigger,
+  id
+}: {
+  trigger: React.ReactNode;
+  id: string;
 }) {
   const [loading, setLoading] = useState(false);
   const [selectedValue, setSelectedValue] = useState<StayOption>("checkin");
 
- const handleStatusChange = async () => {
-  setLoading(true);
-  try {
-    const action = TogglePatchStatus[selectedValue as keyof typeof TogglePatchStatus];
+  const handleStatusChange = async () => {
+    setLoading(true);
+    try {
+      const action = TogglePatchStatus[selectedValue as keyof typeof TogglePatchStatus];
 
-    if (typeof action === "function") {
-      const res = await action(id); 
-      toast.success(`Status updated to ${selectedValue}`);
-    } else {
-      throw new Error("Invalid selection");
+      if (typeof action === "function") {
+        const res = await action(id);
+        toast.success(`Status updated to ${selectedValue}`);
+      } else {
+        throw new Error("Invalid selection");
+      }
+    } catch (error: any) {
+      const message = error?.response?.data?.message || "Failed to update status";
+      toast.error(message);
+      console.error(error);
+    } finally {
+      setLoading(false);
     }
-  } catch (error: any) {
-    const message = error?.response?.data?.message || "Failed to update status";
-    toast.error(message);
-    console.error(error);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   return (
     <Dialog>
@@ -391,8 +396,8 @@ export function OptionSelectionDialog({
             <Label htmlFor="stay-type" className="text-xs font-bold uppercase text-muted-foreground">
               Selection Options
             </Label>
-            <Select 
-              value={selectedValue} 
+            <Select
+              value={selectedValue}
               onValueChange={(value) => setSelectedValue(value as StayOption)}
             >
               <SelectTrigger id="stay-type" className="w-full h-12">
@@ -413,7 +418,7 @@ export function OptionSelectionDialog({
               Cancel
             </Button>
           </DialogClose>
-          <Button 
+          <Button
             onClick={handleStatusChange}
             disabled={loading}
             className="flex-1 sm:flex-none bg-violet-600 hover:bg-violet-700 min-w-[120px]"

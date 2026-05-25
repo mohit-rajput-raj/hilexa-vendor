@@ -583,8 +583,8 @@ export function SwitchAccountButton() {
   const [loading, setLoading] = useState(false)
   const [open, setOpen] = React.useState(false)
   const [activeId, setActiveId] = React.useState("hotel")
-  const { data } = useGetConnectedAccounts();
-  const { switchAccount } = useAuthStore()
+  const { data, isLoading, refetch } = useGetConnectedAccounts();
+  const { switchAccount, switching } = useAuthStore()
 
 
   React.useEffect(() => {
@@ -611,7 +611,7 @@ export function SwitchAccountButton() {
 
         setTimeout(() => {
           setOpen(false)
-          window.location.reload()
+          window.location.href = "/"
         }, 200)
 
       } else {
@@ -633,9 +633,10 @@ export function SwitchAccountButton() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <button
+          disabled={switching}
           className="w-full text-left text-sm font-normal text-foreground hover:text-foreground transition-colors"
         >
-          Switch Account
+          {switching ? <Spinner /> : "Switch Account"}
         </button>
       </DialogTrigger>
 
@@ -652,6 +653,9 @@ export function SwitchAccountButton() {
 
         <ScrollArea className="h-full max-h-[240px] px-6 pb-6 pr-5">
           <div className="space-y-2 pt-2">
+            {
+              isLoading && <Spinner />
+            }
             {data?.data.map((account: {
               vendorId: string,
               businessName: string,
@@ -719,6 +723,7 @@ const DialogSignInDemo = () => {
   const { data: user } = useCurrentUser();
   const vendorId = user?.data?.vendor.vendorId;
   const { refetch } = useGetConnectedAccounts();
+
   const [formDataaa, setFormData] = useState({
     email: "",
     password: ""

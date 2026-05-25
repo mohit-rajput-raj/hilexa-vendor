@@ -34,6 +34,7 @@ interface AuthStates {
   hotelId: string;
   setHotelId: (id: string) => void;
   isLoging: boolean;
+  switching: boolean;
   isSiging: boolean;
   currUser: User | null;
   hotel: { _id: string; name: string };
@@ -72,6 +73,7 @@ export const useAuthStore = create<AuthStates>()(
       isLoging: false,
       isSiging: false,
       currUser: null,
+      switching: false,
       currStep: 2,
       steeperStep: 2,
       setSteeperStep: (s: number) => set({ steeperStep: s }),
@@ -86,9 +88,7 @@ export const useAuthStore = create<AuthStates>()(
       draft: true,
 
       switchAccount: async (id: string, cat: string) => {
-        console.log("don");
-
-        set({ isLoging: true });
+        set({ switching: true });
         try {
           const res = await axiosApi.post("/vendor-accounts/switch-account", {
             targetVendorId: id,
@@ -112,6 +112,8 @@ export const useAuthStore = create<AuthStates>()(
           };
         } catch (error) {
           return [];
+        } finally {
+          set({ switching: false });
         }
       },
       userLogin: async (data: Login_signup_Data) => {
@@ -121,21 +123,23 @@ export const useAuthStore = create<AuthStates>()(
           if (res.data.success) {
             set({ currUser: res.data.data.user });
             const token = res.data.accessToken;
-            const status = res.data.data.vendor.status;
+            const status = res.data.data.vendor?.status || "approved";
+            const currentStep = res.data.data.vendor?.currentStep || 1;
             localStorage.setItem("accessToken", token);
             localStorage.setItem("status", status);
-            localStorage.setItem("category", res.data.data.vendor.serviceType);
+            localStorage.setItem(
+              "category",
+              res.data.data?.vendor?.serviceType || "cab",
+            );
             set({
-              draft: ["draft", "pending", "rejected"].includes(
-                res.data.data.vendor.status,
-              ),
-              currStep: res.data.data.vendor.currentStep || 1,
+              draft: ["draft", "pending", "rejected"].includes(status),
+              currStep: currentStep,
             });
             return {
               success: true,
               message: res.data.message,
-              currentStep: res.data.data.vendor.currentStep || 1,
-              status: res.data.data.vendor.status,
+              currentStep: currentStep,
+              status: status,
             };
           }
           return {

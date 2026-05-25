@@ -4,7 +4,7 @@ import { ErrorBoundary } from 'react-error-boundary'
 import { Verify } from '@/app/(auth)/authMiddleware'
 import { PageSkeleton } from '../rooms/_components/details.skeleton'
 import { MessageModal, RoomListing } from '../rooms/_components/RoomsListing'
-import { CabListing } from '../rooms/_components/cabListing'
+import { CabListing } from './_components/cabListing'
 
 type Props = {}
 

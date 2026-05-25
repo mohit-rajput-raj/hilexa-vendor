@@ -23,6 +23,7 @@ import { useAuthStore } from "@/stores/auth.store";
 import { toast } from "sonner";
 import { NewCabProps, NewCabSchema } from "./zod-schema";
 import { addCabService } from "@/services/fetch.service";
+import { useCurrentUser } from "@/services/queryes";
 
 const cabTypes = ["luxury", "standard", "premium", "economy", "suv"];
 export default function Page() {
@@ -40,10 +41,13 @@ const AddCabForm = ({
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [previews, setPreviews] = useState<string[]>([]);
+  const { data } = useCurrentUser();
+  console.log(data?.data?.serviceDetails?.id);
 
   const form = useForm<NewCabProps>({
     resolver: zodResolver(NewCabSchema),
     defaultValues: {
+      cabId: data?.data?.serviceDetails?.id,
       title: "", pickupLocation: "", dropLocation: "", carName: "",
       cabType: "standard", capacity: 4, carNumber: "", images: [],
       description: "", features: [""], basePrice: 1000, discountPrice: 0,

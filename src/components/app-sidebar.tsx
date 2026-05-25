@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/sidebar"
 import LOGO from "./logo/logo"
 import { usePathname } from "next/navigation"
+import { Loader2 } from "lucide-react"
 
 export const data = {
   user: {
@@ -47,7 +48,7 @@ export const data = {
     adventure: [
       { title: "Dashboard", url: "/dashboard", icon: IconDashboard },
       { title: "Reservation", url: "/reservation", icon: IconListDetails },
-      { title: "Adventure", url: "/adventure", icon: IconMountain },
+      { title: "Adventure", url: "/adventures", icon: IconMountain },
       { title: "Calendar", url: "/calendar", icon: IconCalendar },
       { title: "Reviews", url: "/reviews", icon: IconMessage },
       { title: "Invoice", url: "/invoice", icon: IconDatabase },
@@ -107,7 +108,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild className="p-1.5">
-              <LOGO />
+              <React.Suspense fallback={<div><Loader2 className="animate-spin" /></div>}>
+                <LOGO />
+              </React.Suspense>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
