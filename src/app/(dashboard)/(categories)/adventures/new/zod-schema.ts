@@ -25,7 +25,7 @@ export const DistanceServiceSchema = z
       duration: z.string().min(1, "Duration is required"),
     }),
     features: z.array(z.string()).min(1, "At least one feature is required"),
-    images: z.array(imageSchema),
+    images: z.array(imageSchema).min(5, "At least 5 images are required"),
   })
   .refine((data) => data.discountPrice < data.basePrice, {
     message: "Discount price must be less than base price",
@@ -44,7 +44,7 @@ export const TimeServiceSchema = z
       duration: z.string().min(1, "Duration is required"),
     }),
     features: z.array(z.string()).min(1, "At least one feature is required"),
-    images: z.array(imageSchema),
+    images: z.array(imageSchema).min(5, "At least 5 images are required"),
   })
   .refine((data) => data.discountPrice < data.basePrice, {
     message: "Discount price must be less than base price",
@@ -60,7 +60,7 @@ export const FixedServiceSchema = z
     basePrice: z.number().min(1, "Base price is required"),
     discountPrice: z.number().min(0, "Discount price is required"),
     features: z.array(z.string()).min(1, "At least one feature is required"),
-    images: z.array(imageSchema),
+    images: z.array(imageSchema).min(5, "At least 5 images are required"),
   })
   .refine((data) => data.discountPrice < data.basePrice, {
     message: "Discount price must be less than base price",
@@ -80,7 +80,7 @@ export const PackageServiceSchema = z
       nights: z.number().min(0, "Nights is required"),
     }),
     features: z.array(z.string()).min(1, "At least one feature is required"),
-    images: z.array(imageSchema),
+    images: z.array(imageSchema).min(5, "At least 5 images are required"),
     itinerary: z
       .array(itinerarySchema)
       .min(1, "At least one itinerary day is required"),

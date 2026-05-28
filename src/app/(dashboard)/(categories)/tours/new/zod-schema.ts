@@ -21,7 +21,7 @@ export const NewTourSchema = z
         public_id: z.string(),
         resource_type: z.string(),
       }),
-    ),
+    ).min(5, "At least 5 images are required"),
     itinerary: z
       .array(
         z.object({

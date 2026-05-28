@@ -144,15 +144,6 @@ export const useSignUp = () => {
     setLoading(true);
 
     try {
-      console.log("name", name);
-      console.log("address", address);
-      console.log("description", description);
-      console.log("amenities", amenities);
-      console.log("documents", documents);
-      console.log("images", images);
-      console.log("city", city);
-      console.log("location", location);
-
       const res = await SaveHotelDetails({
         name,
         address,

@@ -415,7 +415,7 @@ export default function Process() {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const token = localStorage.getItem("accessToken");
+      const token = localStorage.getItem("vendoeAccessToken");
 
       if (!token) {
         router.replace("/login");

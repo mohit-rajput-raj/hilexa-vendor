@@ -564,7 +564,7 @@ export function NavUser() {
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => {
-              localStorage.removeItem("accessToken")
+              localStorage.removeItem("vendoeAccessToken")
               queryClient.clear()
               router.push("/login")
             }}>

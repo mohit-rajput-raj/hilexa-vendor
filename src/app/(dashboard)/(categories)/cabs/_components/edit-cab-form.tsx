@@ -21,6 +21,7 @@ import {
 
 import { useAuthStore } from "@/stores/auth.store";
 import { toast } from "sonner";
+import { CitySearchInput } from "@/components/city-search-input";
 import { updateCabServices } from "@/services/fetch.service";
 import { useGetCabServiceDetailsById } from "@/services/tanstack.query";
 import { NewCabProps, NewCabSchema } from "../new/zod-schema";
@@ -201,8 +202,8 @@ export default function EditCabForm({
                 <AccordionTrigger>Route & Details</AccordionTrigger>
                 <AccordionContent className="space-y-6 pt-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <FormField control={form.control} name="pickupLocation" render={({ field }) => (<FormItem><FormLabel>Pickup Location *</FormLabel><FormControl><Input {...field} placeholder="Rishikesh" /></FormControl><FormMessage /></FormItem>)} />
-                    <FormField control={form.control} name="dropLocation" render={({ field }) => (<FormItem><FormLabel>Drop Location *</FormLabel><FormControl><Input {...field} placeholder="Dehradun Airport" /></FormControl><FormMessage /></FormItem>)} />
+                    <FormField control={form.control} name="pickupLocation" render={({ field }) => (<FormItem><FormLabel>Pickup Location *</FormLabel><FormControl><CitySearchInput value={field.value} onChange={field.onChange} onBlur={field.onBlur} placeholder="Search pickup city..." /></FormControl><FormMessage /></FormItem>)} />
+                    <FormField control={form.control} name="dropLocation" render={({ field }) => (<FormItem><FormLabel>Drop Location *</FormLabel><FormControl><CitySearchInput value={field.value} onChange={field.onChange} onBlur={field.onBlur} placeholder="Search drop city..." /></FormControl><FormMessage /></FormItem>)} />
                     <FormField control={form.control} name="meta.distance" render={({ field }) => (<FormItem><FormLabel>Distance *</FormLabel><FormControl><Input {...field} placeholder="35 km" /></FormControl><FormMessage /></FormItem>)} />
                     <FormField control={form.control} name="meta.duration" render={({ field }) => (<FormItem><FormLabel>Duration *</FormLabel><FormControl><Input {...field} placeholder="1.5 hours" /></FormControl><FormMessage /></FormItem>)} />
                   </div>

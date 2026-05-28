@@ -27,7 +27,7 @@ export default function LoginPage() {
   const { data } = useCurrentUser()
   const { draft } = useAuthStore()
   useEffect(() => {
-    if (data?.data?.role === "vendor" && localStorage.getItem("accessToken") !== null) {
+    if (data?.data?.role === "vendor" && localStorage.getItem("vendoeAccessToken") !== null) {
       if (draft) {
         router.push("/signup/process")
       } else {

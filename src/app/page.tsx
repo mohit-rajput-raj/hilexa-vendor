@@ -28,7 +28,7 @@ export default function Home() {
       } else {
         router.replace("/dashboard")
       }
-    } else if (localStorage.getItem("accessToken") === null) {
+    } else if (localStorage.getItem("vendoeAccessToken") === null) {
       router.replace("/login")
     }
   }, [data, mounted])

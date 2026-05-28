@@ -21,6 +21,7 @@ import {
 
 import { useAuthStore } from "@/stores/auth.store";
 import { toast } from "sonner";
+import { CitySearchInput } from "@/components/city-search-input";
 import { NewCabProps, NewCabSchema } from "./zod-schema";
 import { addCabService } from "@/services/fetch.service";
 import { useCurrentUser } from "@/services/queryes";
@@ -42,12 +43,11 @@ const AddCabForm = ({
   const [uploading, setUploading] = useState(false);
   const [previews, setPreviews] = useState<string[]>([]);
   const { data } = useCurrentUser();
-  console.log(data?.data?.serviceDetails?.id);
 
   const form = useForm<NewCabProps>({
     resolver: zodResolver(NewCabSchema),
     defaultValues: {
-      cabId: data?.data?.serviceDetails?.id,
+      cabId: data?.data?.approvedData?.cabId,
       title: "", pickupLocation: "", dropLocation: "", carName: "",
       cabType: "standard", capacity: 4, carNumber: "", images: [],
       description: "", features: [""], basePrice: 1000, discountPrice: 0,
@@ -60,6 +60,12 @@ const AddCabForm = ({
     useFieldArray({ control: form.control, name: "features" as any });
 
   useEffect(() => { return () => { previews.forEach((url) => URL.revokeObjectURL(url)); }; }, [previews]);
+
+  useEffect(() => {
+    if (data?.data?.approvedData?.cabId) {
+      form.setValue("cabId", data.data.approvedData.cabId);
+    }
+  }, [data, form]);
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.length) return;
@@ -101,7 +107,21 @@ const AddCabForm = ({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pb-12">
+      <form
+        onSubmit={form.handleSubmit(onSubmit, (errors) => {
+          console.error("Validation errors:", errors);
+          const errorMsg = Object.entries(errors)
+            .map(([key, err]) => {
+              if (err && typeof err === 'object' && 'message' in err) {
+                return `${key}: ${err.message}`;
+              }
+              return `${key}: Invalid value`;
+            })
+            .join(", ");
+          toast.error(`Form validation failed: ${errorMsg}`);
+        })}
+        className="space-y-6 pb-12"
+      >
         <Card className="rounded-2xl border-none shadow-lg">
           <CardHeader className="flex flex-row justify-between items-center">
             <CardTitle className="text-2xl font-bold">Add New Cab</CardTitle>
@@ -158,8 +178,8 @@ const AddCabForm = ({
                 <AccordionTrigger>Route & Details</AccordionTrigger>
                 <AccordionContent className="space-y-6 pt-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <FormField control={form.control} name="pickupLocation" render={({ field }) => (<FormItem><FormLabel>Pickup Location *</FormLabel><FormControl><Input {...field} placeholder="Rishikesh" /></FormControl><FormMessage /></FormItem>)} />
-                    <FormField control={form.control} name="dropLocation" render={({ field }) => (<FormItem><FormLabel>Drop Location *</FormLabel><FormControl><Input {...field} placeholder="Dehradun Airport" /></FormControl><FormMessage /></FormItem>)} />
+                    <FormField control={form.control} name="pickupLocation" render={({ field }) => (<FormItem><FormLabel>Pickup Location *</FormLabel><FormControl><CitySearchInput value={field.value} onChange={field.onChange} onBlur={field.onBlur} placeholder="Search pickup city..." /></FormControl><FormMessage /></FormItem>)} />
+                    <FormField control={form.control} name="dropLocation" render={({ field }) => (<FormItem><FormLabel>Drop Location *</FormLabel><FormControl><CitySearchInput value={field.value} onChange={field.onChange} onBlur={field.onBlur} placeholder="Search drop city..." /></FormControl><FormMessage /></FormItem>)} />
                     <FormField control={form.control} name="meta.distance" render={({ field }) => (<FormItem><FormLabel>Distance *</FormLabel><FormControl><Input {...field} placeholder="35 km" /></FormControl><FormMessage /></FormItem>)} />
                     <FormField control={form.control} name="meta.duration" render={({ field }) => (<FormItem><FormLabel>Duration *</FormLabel><FormControl><Input {...field} placeholder="1.5 hours" /></FormControl><FormMessage /></FormItem>)} />
                   </div>

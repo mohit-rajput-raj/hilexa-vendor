@@ -49,7 +49,6 @@ const AddBikeForm = ({ setEditMode, }: {
   const [uploading, setUploading] = useState(false);
   const [previews, setPreviews] = useState<string[]>([]);
   const { data } = useCurrentUser();
-  console.log(data?.data?.serviceDetails?.id);
   const form = useForm<NewBikeProps>({
     resolver: zodResolver(NewBikeSchema),
     defaultValues: {
@@ -84,6 +83,13 @@ const AddBikeForm = ({ setEditMode, }: {
       previews.forEach((url) => URL.revokeObjectURL(url));
     };
   }, [previews]);
+
+  useEffect(() => {
+    const id = data?.data?.approvedData?.bikeId || data?.data?.serviceDetails?.id;
+    if (id) {
+      form.setValue("bikeId", id);
+    }
+  }, [data, form]);
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.length) return;
@@ -156,7 +162,21 @@ const AddBikeForm = ({ setEditMode, }: {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pb-12">
+      <form
+        onSubmit={form.handleSubmit(onSubmit, (errors) => {
+          console.error("Validation errors:", errors);
+          const errorMsg = Object.entries(errors)
+            .map(([key, err]) => {
+              if (err && typeof err === 'object' && 'message' in err) {
+                return `${key}: ${err.message}`;
+              }
+              return `${key}: Invalid value`;
+            })
+            .join(", ");
+          toast.error(`Form validation failed: ${errorMsg}`);
+        })}
+        className="space-y-6 pb-12"
+      >
         <Card className="rounded-2xl border-none shadow-lg">
           <CardHeader className="flex flex-row justify-between items-center">
             <CardTitle className="text-2xl font-bold">Add New Bike</CardTitle>
