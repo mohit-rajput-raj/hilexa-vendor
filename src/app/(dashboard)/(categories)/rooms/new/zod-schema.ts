@@ -6,7 +6,7 @@ export const NewRoomSchema = z
     name: z.string().min(1, "Name is required"),
     description: z.string().min(1, "Description is required"),
     basePrice: z.number().min(1, "Base price is required"),
-    discountPrice: z.number().min(1, "Discount price is required"),
+    discountPrice: z.number().min(0, "Discount price is required"),
     capacity: z.object({
       adults: z.number().min(1, "Adults is required"),
       children: z.number(),
@@ -29,7 +29,7 @@ export const NewRoomSchema = z
         public_id: z.string(),
         resource_type: z.string(),
       }),
-    ),
+    ).min(5, "At least 5 images are required"),
     totalRooms: z.number().min(1, "Total rooms is required"),
     isActive: z.boolean(),
   })

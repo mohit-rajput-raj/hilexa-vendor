@@ -108,7 +108,7 @@ export const SignUpSchema = z
     hotelAddress: z.string().min(1, "Address is required"),
     hotelCity: z.string().min(1, "City is required"),
     location: locationSchema,
-    images: z.array(mediaSchema).min(1, "At least one image is required"),
+    images: z.array(mediaSchema).min(5, "At least 5 images are required"),
     documents: z
       .array(documentSchema)
       .min(1, "At least one document is required"),
@@ -129,7 +129,7 @@ export const hotelCreateSchema = z.object({
   address: z.string().min(1, "Address is required"),
   city: z.string().min(1, "City is required"),
   location: locationSchema,
-  images: z.array(mediaSchema).min(1, "At least one image is required"),
+  images: z.array(mediaSchema).min(5, "At least 5 images are required"),
   documents: z
     .array(documentSchema)
     .min(1, "At least one document is required"),

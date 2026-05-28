@@ -21,6 +21,7 @@ import {
 
 import { useAuthStore } from "@/stores/auth.store";
 import { toast } from "sonner";
+import { CitySearchInput } from "@/components/city-search-input";
 import { NewTourProps, NewTourSchema } from "./zod-schema";
 import { addTourService } from "@/services/fetch.service";
 import { useCurrentUser } from "@/services/queryes";
@@ -65,6 +66,13 @@ const AddTourForm = ({
 
   useEffect(() => { return () => { previews.forEach((url) => URL.revokeObjectURL(url)); }; }, [previews]);
 
+  useEffect(() => {
+    const id = data?.data?.approvedData?.tourId || data?.data?.serviceDetails?.id;
+    if (id) {
+      form.setValue("tourId", id);
+    }
+  }, [data, form]);
+
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.length) return;
     const files = Array.from(e.target.files);
@@ -105,7 +113,21 @@ const AddTourForm = ({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pb-12">
+      <form
+        onSubmit={form.handleSubmit(onSubmit, (errors) => {
+          console.error("Validation errors:", errors);
+          const errorMsg = Object.entries(errors)
+            .map(([key, err]) => {
+              if (err && typeof err === 'object' && 'message' in err) {
+                return `${key}: ${err.message}`;
+              }
+              return `${key}: Invalid value`;
+            })
+            .join(", ");
+          toast.error(`Form validation failed: ${errorMsg}`);
+        })}
+        className="space-y-6 pb-12"
+      >
         <Card className="rounded-2xl border-none shadow-lg">
           <CardHeader className="flex flex-row justify-between items-center">
             <CardTitle className="text-2xl font-bold">Add New Tour</CardTitle>
@@ -166,7 +188,7 @@ const AddTourForm = ({
                   </div>
                   {destFields.map((field, index) => (
                     <div key={field.id} className="flex gap-4 items-end border-b pb-4">
-                      <FormField control={form.control} name={`destinations.${index}`} render={({ field }) => (<FormItem className="flex-1"><FormLabel>Destination {index + 1}</FormLabel><FormControl><Input {...field} placeholder="e.g. Rishikesh, Shivpuri..." /></FormControl><FormMessage /></FormItem>)} />
+                      <FormField control={form.control} name={`destinations.${index}`} render={({ field }) => (<FormItem className="flex-1"><FormLabel>Destination {index + 1}</FormLabel><FormControl><CitySearchInput value={field.value} onChange={field.onChange} onBlur={field.onBlur} placeholder="Search destination city..." /></FormControl><FormMessage /></FormItem>)} />
                       <Button type="button" variant="ghost" size="icon" className="mb-2" onClick={() => removeDest(index)}><X className="h-4 w-4" /></Button>
                     </div>
                   ))}

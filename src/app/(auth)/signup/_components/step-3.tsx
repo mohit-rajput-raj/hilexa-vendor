@@ -538,8 +538,7 @@ export const Step_3 = ({ methods }: { currentStep: number; methods: UseFormRetur
                 const { latitude, longitude } = pos.coords;
 
 
-                console.log("latitude", latitude);
-                console.log("longitude", longitude);
+
 
                 // 1. Update Map and Coordinates
                 setValue("location", {

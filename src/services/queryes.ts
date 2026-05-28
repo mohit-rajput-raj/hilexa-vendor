@@ -4,7 +4,7 @@ import { currentUser } from "./user.service";
 
 export const useCurrentUser = () => {
   const token =
-    typeof window !== "undefined" && localStorage.getItem("accessToken");
+    typeof window !== "undefined" && localStorage.getItem("vendoeAccessToken");
   return useQuery({
     queryKey: ["current_user"],
     queryFn: currentUser,

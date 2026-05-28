@@ -19,7 +19,7 @@ export const NewBikeSchema = z
         public_id: z.string(),
         resource_type: z.string(),
       }),
-    ),
+    ).min(5, "At least 5 images are required"),
     meta: z.object({
       mileage: z.string().min(1, "Mileage is required"),
       gearType: z.string().min(1, "Gear type is required"),

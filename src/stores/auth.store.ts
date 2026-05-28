@@ -96,7 +96,7 @@ export const useAuthStore = create<AuthStates>()(
           if (res.data.success) {
             const token = res.data.accessToken;
             const status = res.data.vendor.status;
-            localStorage.setItem("accessToken", token);
+            localStorage.setItem("vendoeAccessToken", token);
             localStorage.setItem("status", status);
             localStorage.setItem("category", cat);
 
@@ -125,7 +125,7 @@ export const useAuthStore = create<AuthStates>()(
             const token = res.data.accessToken;
             const status = res.data.data.vendor?.status || "approved";
             const currentStep = res.data.data.vendor?.currentStep || 1;
-            localStorage.setItem("accessToken", token);
+            localStorage.setItem("vendoeAccessToken", token);
             localStorage.setItem("status", status);
             localStorage.setItem(
               "category",
@@ -183,7 +183,7 @@ export const useAuthStore = create<AuthStates>()(
           const res = await axiosApi.post("/auth/verify-otp", data);
           if (res.data.success) {
             set({ currUser: res.data.data.user });
-            localStorage.setItem("accessToken", res.data.accessToken);
+            localStorage.setItem("vendoeAccessToken", res.data.accessToken);
             localStorage.setItem("status", res.data.data.vendor.status);
             return {
               success: true,

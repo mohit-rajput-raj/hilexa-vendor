@@ -74,11 +74,12 @@ export default function AddRoomForm({
     mode: "onChange",
   });
   useEffect(() => {
-    if (data?.data?.approvedData?.hotelId) {
-      setHotelId(data.data.approvedData.hotelId);
-      form.setValue("hotelId", data.data.approvedData.hotelId);
+    const id = data?.data?.approvedData?.hotelId || data?.data?.serviceDetails?.id;
+    if (id) {
+      setHotelId(id);
+      form.setValue("hotelId", id);
     }
-  }, [data]);
+  }, [data, form]);
 
 
 
@@ -168,395 +169,408 @@ export default function AddRoomForm({
     )
   }
 
-  return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pb-12">
-        <Card className="rounded-2xl border-none shadow-lg">
-          <CardHeader className="flex flex-row justify-between items-center">
-            <CardTitle className="text-2xl font-bold">Add New Room</CardTitle>
-            {setEditMode && (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setEditMode((v) => ({ ...v, mode: false }))}
-              >
-                Close
-              </Button>
-            )}
-          </CardHeader>
+  <Form {...form}>
+    <form
+      onSubmit={form.handleSubmit(onSubmit, (errors) => {
+        console.error("Validation errors:", errors);
+        const errorMsg = Object.entries(errors)
+          .map(([key, err]) => {
+            if (err && typeof err === 'object' && 'message' in err) {
+              return `${key}: ${err.message}`;
+            }
+            return `${key}: Invalid value`;
+          })
+          .join(", ");
+        toast.error(`Form validation failed: ${errorMsg}`);
+      })}
+      className="space-y-6 pb-12"
+    >
+      <Card className="rounded-2xl border-none shadow-lg">
+        <CardHeader className="flex flex-row justify-between items-center">
+          <CardTitle className="text-2xl font-bold">Add New Room</CardTitle>
+          {setEditMode && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setEditMode((v) => ({ ...v, mode: false }))}
+            >
+              Close
+            </Button>
+          )}
+        </CardHeader>
 
-          <CardContent className="space-y-8 pt-6">
-            <Accordion type="multiple" defaultValue={["images", "basic", "capacity", "amenities"]}>
-              {/* ── Images ─────────────────────────────────────── */}
-              <AccordionItem value="images">
-                <AccordionTrigger>Room Images</AccordionTrigger>
-                <AccordionContent>
-                  <div className="space-y-6">
-                    <div className="flex flex-wrap gap-4">
-                      {form.watch("images").map((url, idx) => (
-                        <div key={url.url} className="relative group">
-                          <div className="h-28 w-40 rounded-xl overflow-hidden border shadow-sm">
-                            <Image
-                              src={url.url}
-                              alt={`Room image ${idx + 1}`}
-                              width={160}
-                              height={112}
-                              className="object-cover"
-                            />
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => removeImage(idx)}
-                            className="absolute -top-2 -right-2 bg-card text-white rounded-full z-4 p-1.5 shadow-md hover:bg-destructive/90"
-                            disabled={uploading}
-                          >
-                            <X size={16} />
-                          </button>
+        <CardContent className="space-y-8 pt-6">
+          <Accordion type="multiple" defaultValue={["images", "basic", "capacity", "amenities"]}>
+            {/* ── Images ─────────────────────────────────────── */}
+            <AccordionItem value="images">
+              <AccordionTrigger>Room Images</AccordionTrigger>
+              <AccordionContent>
+                <div className="space-y-6">
+                  <div className="flex flex-wrap gap-4">
+                    {form.watch("images").map((url, idx) => (
+                      <div key={url.url} className="relative group">
+                        <div className="h-28 w-40 rounded-xl overflow-hidden border shadow-sm">
+                          <Image
+                            src={url.url}
+                            alt={`Room image ${idx + 1}`}
+                            width={160}
+                            height={112}
+                            className="object-cover"
+                          />
                         </div>
-                      ))}
-
-                      <label
-                        className={`h-28 w-40 rounded-xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer hover:bg-muted/50 transition-all ${uploading ? "opacity-60 cursor-not-allowed" : ""
-                          }`}
-                      >
-                        <Input
-                          type="file"
-                          multiple
-                          accept="image/jpeg,image/png,image/webp"
-                          className="hidden"
-                          onChange={handleImageChange}
+                        <button
+                          type="button"
+                          onClick={() => removeImage(idx)}
+                          className="absolute -top-2 -right-2 bg-card text-white rounded-full z-4 p-1.5 shadow-md hover:bg-destructive/90"
                           disabled={uploading}
-                        />
-                        {uploading ? (
-                          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                        ) : (
-                          <>
-                            <Plus size={28} className="text-muted-foreground" />
-                            <span className="mt-2 text-sm font-medium text-muted-foreground">
-                              Add Images
-                            </span>
-                          </>
-                        )}
-                      </label>
-                    </div>
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
+                    ))}
 
-                    {form.formState.errors.images && (
-                      <p className="text-sm text-destructive">
-                        {form.formState.errors.images.message}
-                      </p>
+                    <label
+                      className={`h-28 w-40 rounded-xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer hover:bg-muted/50 transition-all ${uploading ? "opacity-60 cursor-not-allowed" : ""
+                        }`}
+                    >
+                      <Input
+                        type="file"
+                        multiple
+                        accept="image/jpeg,image/png,image/webp"
+                        className="hidden"
+                        onChange={handleImageChange}
+                        disabled={uploading}
+                      />
+                      {uploading ? (
+                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                      ) : (
+                        <>
+                          <Plus size={28} className="text-muted-foreground" />
+                          <span className="mt-2 text-sm font-medium text-muted-foreground">
+                            Add Images
+                          </span>
+                        </>
+                      )}
+                    </label>
+                  </div>
+
+                  {form.formState.errors.images && (
+                    <p className="text-sm text-destructive">
+                      {form.formState.errors.images.message}
+                    </p>
+                  )}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="basic">
+              <AccordionTrigger>Basic Information</AccordionTrigger>
+              <AccordionContent className="space-y-6 pt-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Room Name / Type *</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="Deluxe King Room" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
                     )}
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-
-              <AccordionItem value="basic">
-                <AccordionTrigger>Basic Information</AccordionTrigger>
-                <AccordionContent className="space-y-6 pt-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                    <FormField
-                      control={form.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Room Name / Type *</FormLabel>
-                          <FormControl>
-                            <Input {...field} placeholder="Deluxe King Room" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="roomSizeSqm"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Size (sqm) *</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              {...field}
-                              onChange={(e) => field.onChange(Number(e.target.value))}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="totalRooms"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Total Available Rooms *</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              {...field}
-                              onChange={(e) => field.onChange(Number(e.target.value))}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="viewType"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>View Type</FormLabel>
-                          <FormControl>
-                            <Input  {...field} placeholder="Ocean, Garden, City..." />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="basePrice"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Base Price (₹) *</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              {...field}
-                              onChange={(e) => field.onChange(Number(e.target.value))}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="discountPrice"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Discount Price (₹)</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              {...field}
-                              onChange={(e) => field.onChange(Number(e.target.value))}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                  />
 
                   <FormField
                     control={form.control}
-                    name="description"
+                    name="roomSizeSqm"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Description *</FormLabel>
+                        <FormLabel>Size (sqm) *</FormLabel>
                         <FormControl>
-                          <Textarea
+                          <Input
+                            type="number"
                             {...field}
-                            placeholder="Describe the room, furniture, view, special features..."
-                            className="min-h-32"
+                            onChange={(e) => field.onChange(Number(e.target.value))}
                           />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                </AccordionContent>
-              </AccordionItem>
-              {/* //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */}
-              {/* ── Capacity & Beds ────────────────────────────── */}
-              <AccordionItem value="capacity">
-                <AccordionTrigger>Capacity & Beds</AccordionTrigger>
-                <AccordionContent className="space-y-8 pt-4">
-                  {/* Capacity */}
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <Label className="text-base font-semibold">Capacity Configurations</Label>
 
-                    </div>
+                  <FormField
+                    control={form.control}
+                    name="totalRooms"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Total Available Rooms *</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            {...field}
+                            onChange={(e) => field.onChange(Number(e.target.value))}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                    <FormField
-                      control={form.control}
-                      name={`capacity.adults`}
-                      render={({ field }) => (
-                        <FormItem className="flex-1">
-                          <FormLabel>Adults</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              {...field}
-                              onChange={(e) => field.onChange(Number(e.target.value))}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name={`capacity.children`}
-                      render={({ field }) => (
-                        <FormItem className="flex-1">
-                          <FormLabel>Children</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              {...field}
-                              onChange={(e) => field.onChange(Number(e.target.value))}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                  <FormField
+                    control={form.control}
+                    name="viewType"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>View Type</FormLabel>
+                        <FormControl>
+                          <Input  {...field} placeholder="Ocean, Garden, City..." />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="basePrice"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Base Price (₹) *</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            {...field}
+                            onChange={(e) => field.onChange(Number(e.target.value))}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="discountPrice"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Discount Price (₹)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            {...field}
+                            onChange={(e) => field.onChange(Number(e.target.value))}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Description *</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          {...field}
+                          placeholder="Describe the room, furniture, view, special features..."
+                          className="min-h-32"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </AccordionContent>
+            </AccordionItem>
+            {/* //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */}
+            {/* ── Capacity & Beds ────────────────────────────── */}
+            <AccordionItem value="capacity">
+              <AccordionTrigger>Capacity & Beds</AccordionTrigger>
+              <AccordionContent className="space-y-8 pt-4">
+                {/* Capacity */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-base font-semibold">Capacity Configurations</Label>
 
                   </div>
 
-                  {/* Beds */}
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <Label className="text-base font-semibold">Bed Configurations</Label>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => appendBed({ type: "double", quantity: 1 })}
-                      >
-                        Add Bed Type
-                      </Button>
-                    </div>
+                  <FormField
+                    control={form.control}
+                    name={`capacity.adults`}
+                    render={({ field }) => (
+                      <FormItem className="flex-1">
+                        <FormLabel>Adults</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            {...field}
+                            onChange={(e) => field.onChange(Number(e.target.value))}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name={`capacity.children`}
+                    render={({ field }) => (
+                      <FormItem className="flex-1">
+                        <FormLabel>Children</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            {...field}
+                            onChange={(e) => field.onChange(Number(e.target.value))}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                    {bedFields.map((field, index) => (
-                      <div key={field.id} className="flex gap-4 items-end border-b pb-4">
-                        <FormField
-                          control={form.control}
-                          name={`beds.${index}.type`}
-                          render={({ field }) => (
-                            <FormItem className="flex-1">
-                              <FormLabel>Bed Type</FormLabel>
-                              <FormControl>
-                                <Input {...field} placeholder="King, Queen, Twin..." />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name={`beds.${index}.quantity`}
-                          render={({ field }) => (
-                            <FormItem className="w-32">
-                              <FormLabel>Quantity</FormLabel>
-                              <FormControl>
-                                <Input
-                                  type="number"
-                                  {...field}
-                                  onChange={(e) => field.onChange(Number(e.target.value))}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="mb-2"
-                          onClick={() => removeBed(index)}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))}
+                </div>
+
+                {/* Beds */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-base font-semibold">Bed Configurations</Label>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => appendBed({ type: "double", quantity: 1 })}
+                    >
+                      Add Bed Type
+                    </Button>
                   </div>
-                </AccordionContent>
-              </AccordionItem>
 
-              {/* ── Amenities ──────────────────────────────────── */}
-              <AccordionItem value="amenities">
-                <AccordionTrigger>Amenities & Features</AccordionTrigger>
-                <AccordionContent>
-                  {/* You can keep or adapt your CheckboxGrid component here */}
-                  {/* Example placeholder */}
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 pt-4">
-                    {amenityKeys.map((id) => (
+                  {bedFields.map((field, index) => (
+                    <div key={field.id} className="flex gap-4 items-end border-b pb-4">
                       <FormField
-                        key={id}
                         control={form.control}
-                        name="amenities"
+                        name={`beds.${index}.type`}
                         render={({ field }) => (
-                          <FormItem className="flex items-center space-x-3 space-y-0">
+                          <FormItem className="flex-1">
+                            <FormLabel>Bed Type</FormLabel>
                             <FormControl>
-                              <Checkbox
-                                checked={field.value?.includes(id)}
-                                onCheckedChange={(checked) => {
-                                  const arr = field.value || [];
-                                  field.onChange(
-                                    checked ? [...arr, id] : arr.filter((v) => v !== id)
-                                  );
-                                }}
-                              />
+                              <Input {...field} placeholder="King, Queen, Twin..." />
                             </FormControl>
-                            <FormLabel className="font-normal capitalize">{id.replace("_", " ")}</FormLabel>
+                            <FormMessage />
                           </FormItem>
                         )}
                       />
-                    ))}
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
+                      <FormField
+                        control={form.control}
+                        name={`beds.${index}.quantity`}
+                        render={({ field }) => (
+                          <FormItem className="w-32">
+                            <FormLabel>Quantity</FormLabel>
+                            <FormControl>
+                              <Input
+                                type="number"
+                                {...field}
+                                onChange={(e) => field.onChange(Number(e.target.value))}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="mb-2"
+                        onClick={() => removeBed(index)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
 
-            <Separator className="my-8" />
+            {/* ── Amenities ──────────────────────────────────── */}
+            <AccordionItem value="amenities">
+              <AccordionTrigger>Amenities & Features</AccordionTrigger>
+              <AccordionContent>
+                {/* You can keep or adapt your CheckboxGrid component here */}
+                {/* Example placeholder */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 pt-4">
+                  {amenityKeys.map((id) => (
+                    <FormField
+                      key={id}
+                      control={form.control}
+                      name="amenities"
+                      render={({ field }) => (
+                        <FormItem className="flex items-center space-x-3 space-y-0">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value?.includes(id)}
+                              onCheckedChange={(checked) => {
+                                const arr = field.value || [];
+                                field.onChange(
+                                  checked ? [...arr, id] : arr.filter((v) => v !== id)
+                                );
+                              }}
+                            />
+                          </FormControl>
+                          <FormLabel className="font-normal capitalize">{id.replace("_", " ")}</FormLabel>
+                        </FormItem>
+                      )}
+                    />
+                  ))}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
 
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Button
-                type="submit"
-                size="lg"
-                disabled={loading || uploading
+          <Separator className="my-8" />
 
-                }
-                className="flex-1"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Creating...
-                  </>
-                ) : (
-                  "Create Room"
-                )}
-              </Button>
+          <div className="flex flex-col sm:flex-row gap-4">
+            <Button
+              type="submit"
+              size="lg"
+              disabled={loading || uploading
 
-              <Button
-                type="button"
-                variant="outline"
-                size="lg"
-                onClick={() => {
-                  form.reset();
-                  setPreviews([]);
-                }}
-                disabled={loading || uploading}
-              >
-                Reset Form
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </form>
-    </Form>
-  );
+              }
+              className="flex-1"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                "Create Room"
+              )}
+            </Button>
+
+            <Button
+              type="button"
+              variant="outline"
+              size="lg"
+              onClick={() => {
+                form.reset();
+                setPreviews([]);
+              }}
+              disabled={loading || uploading}
+            >
+              Reset Form
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </form>
+  </Form>
+
 }
 
 // CheckboxGrid remains unchanged — keeping your version

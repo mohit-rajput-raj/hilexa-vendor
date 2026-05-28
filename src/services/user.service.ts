@@ -1,7 +1,7 @@
 import { axiosApi } from "@/lib/axios";
 
 export const currentUser = async () => {
-  const token = localStorage.getItem("accessToken");
+  const token = localStorage.getItem("vendoeAccessToken");
 
   if (!token) {
     throw new Error("No access token found");

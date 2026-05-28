@@ -21,7 +21,7 @@ export default function Page(
     const [ok, setOk] = useState(false);
 
     useEffect(() => {
-        if (!localStorage.getItem("accessToken")) {
+        if (!localStorage.getItem("vendoeAccessToken")) {
             router.replace("/login");
         } else {
             setOk(true);

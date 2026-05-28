@@ -141,6 +141,12 @@ function DistanceForm({ adventureId }: { adventureId: string }) {
   });
   const imgHook = useImageUpload(form);
 
+  useEffect(() => {
+    if (adventureId) {
+      form.setValue("adventureId", adventureId);
+    }
+  }, [adventureId, form]);
+
   const onSubmit = async (data: DistanceServiceProps) => {
     setLoading(true);
     try { await addAdventureService(data); toast.success("Rafting service created!"); form.reset(); imgHook.setPreviews([]); }
@@ -150,7 +156,21 @@ function DistanceForm({ adventureId }: { adventureId: string }) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form
+        onSubmit={form.handleSubmit(onSubmit, (errors) => {
+          console.error("Rafting validation errors:", errors);
+          const errorMsg = Object.entries(errors)
+            .map(([key, err]) => {
+              if (err && typeof err === 'object' && 'message' in err) {
+                return `${key}: ${err.message}`;
+              }
+              return `${key}: Invalid value`;
+            })
+            .join(", ");
+          toast.error(`Form validation failed: ${errorMsg}`);
+        })}
+        className="space-y-6"
+      >
         <Accordion type="multiple" defaultValue={["images", "basic", "meta", "features"]}>
           <ImagesSection form={form} {...imgHook} />
           <AccordionItem value="basic">
@@ -192,6 +212,12 @@ function TimeForm({ adventureId }: { adventureId: string }) {
   });
   const imgHook = useImageUpload(form);
 
+  useEffect(() => {
+    if (adventureId) {
+      form.setValue("adventureId", adventureId);
+    }
+  }, [adventureId, form]);
+
   const onSubmit = async (data: TimeServiceProps) => {
     setLoading(true);
     try { await addAdventureService(data); toast.success("Paragliding service created!"); form.reset(); imgHook.setPreviews([]); }
@@ -201,7 +227,21 @@ function TimeForm({ adventureId }: { adventureId: string }) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form
+        onSubmit={form.handleSubmit(onSubmit, (errors) => {
+          console.error("Paragliding validation errors:", errors);
+          const errorMsg = Object.entries(errors)
+            .map(([key, err]) => {
+              if (err && typeof err === 'object' && 'message' in err) {
+                return `${key}: ${err.message}`;
+              }
+              return `${key}: Invalid value`;
+            })
+            .join(", ");
+          toast.error(`Form validation failed: ${errorMsg}`);
+        })}
+        className="space-y-6"
+      >
         <Accordion type="multiple" defaultValue={["images", "basic", "meta", "features"]}>
           <ImagesSection form={form} {...imgHook} />
           <AccordionItem value="basic">
@@ -242,6 +282,12 @@ function FixedForm({ adventureId }: { adventureId: string }) {
   });
   const imgHook = useImageUpload(form);
 
+  useEffect(() => {
+    if (adventureId) {
+      form.setValue("adventureId", adventureId);
+    }
+  }, [adventureId, form]);
+
   const onSubmit = async (data: FixedServiceProps) => {
     setLoading(true);
     try { await addAdventureService(data); toast.success("Bungee service created!"); form.reset(); imgHook.setPreviews([]); }
@@ -251,7 +297,21 @@ function FixedForm({ adventureId }: { adventureId: string }) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form
+        onSubmit={form.handleSubmit(onSubmit, (errors) => {
+          console.error("Bungee validation errors:", errors);
+          const errorMsg = Object.entries(errors)
+            .map(([key, err]) => {
+              if (err && typeof err === 'object' && 'message' in err) {
+                return `${key}: ${err.message}`;
+              }
+              return `${key}: Invalid value`;
+            })
+            .join(", ");
+          toast.error(`Form validation failed: ${errorMsg}`);
+        })}
+        className="space-y-6"
+      >
         <Accordion type="multiple" defaultValue={["images", "basic", "features"]}>
           <ImagesSection form={form} {...imgHook} />
           <AccordionItem value="basic">
@@ -285,6 +345,12 @@ function PackageForm({ adventureId }: { adventureId: string }) {
   const imgHook = useImageUpload(form);
   const { fields: itinFields, append: appendItin, remove: removeItin } = useFieldArray({ control: form.control, name: "itinerary" });
 
+  useEffect(() => {
+    if (adventureId) {
+      form.setValue("adventureId", adventureId);
+    }
+  }, [adventureId, form]);
+
   const onSubmit = async (data: PackageServiceProps) => {
     setLoading(true);
     try { await addAdventureService(data); toast.success("Trekking package created!"); form.reset(); imgHook.setPreviews([]); }
@@ -294,7 +360,21 @@ function PackageForm({ adventureId }: { adventureId: string }) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form
+        onSubmit={form.handleSubmit(onSubmit, (errors) => {
+          console.error("Trekking validation errors:", errors);
+          const errorMsg = Object.entries(errors)
+            .map(([key, err]) => {
+              if (err && typeof err === 'object' && 'message' in err) {
+                return `${key}: ${err.message}`;
+              }
+              return `${key}: Invalid value`;
+            })
+            .join(", ");
+          toast.error(`Form validation failed: ${errorMsg}`);
+        })}
+        className="space-y-6"
+      >
         <Accordion type="multiple" defaultValue={["images", "basic", "meta", "itinerary", "features"]}>
           <ImagesSection form={form} {...imgHook} />
           <AccordionItem value="basic">
