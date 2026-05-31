@@ -40,7 +40,10 @@ import { PageSkeleton } from "../../rooms/_components/details.skeleton";
 import {
   useGetToursServices,
   useGetTourServiceDetailsById,
+  useDeleteTourService,
 } from "@/services/tanstack.query";
+import { DeleteConfirmationModal } from "@/components/delete-confirmation-modal";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import Rupee from "@/components/rupee";
 import Image from "next/image";
@@ -254,7 +257,7 @@ export function ToursListing() {
         <section ref={targetSectionRef}>
           <div className="space-y-6 lg:sticky lg:top-6 h-fit w-full">
             {tourSelected ? (
-              <TourSideBarDetails tourId={tourSelected} />
+              <TourSideBarDetails tourId={tourSelected} setTourSelected={setTourSelected} />
             ) : (
               <div className="flex justify-center">
                 <Card className="w-full shadow-lg rounded-2xl border-dashed border-2">
@@ -276,8 +279,25 @@ export function ToursListing() {
 }
 
 // ── Tour Sidebar ──
-const TourSideBarDetails = ({ tourId }: { tourId: string }) => {
+const TourSideBarDetails = ({
+  tourId,
+  setTourSelected,
+}: {
+  tourId: string;
+  setTourSelected: React.Dispatch<React.SetStateAction<string | null>>;
+}) => {
   const { data: tourResponse, isLoading, error } = useGetTourServiceDetailsById(tourId);
+  const [activeImage, setActiveImage] = React.useState<string | null>(null);
+  const [isDeleteOpen, setIsDeleteOpen] = React.useState(false);
+  const deleteMutation = useDeleteTourService();
+
+  const getImageUrl = (img: any) => (typeof img === "string" ? img : img?.url || "");
+
+  React.useEffect(() => {
+    if (tourResponse?.data?.images?.length) {
+      setActiveImage(getImageUrl(tourResponse.data.images[0]));
+    }
+  }, [tourResponse]);
 
   if (isLoading) {
     return (
@@ -293,25 +313,47 @@ const TourSideBarDetails = ({ tourId }: { tourId: string }) => {
 
   const t = tourResponse.data;
   const hasImages = t.images && t.images.length > 0;
-  const [activeImage, setActiveImage] = React.useState<string | null>(null);
-
-  React.useEffect(() => {
-    if (hasImages) {
-      setActiveImage(getImageUrl(t.images[0]));
-    }
-  }, [t.images, hasImages]);
 
   const hasDiscount =
     !!t.pricing?.discountPrice && t.pricing.discountPrice < t.pricing.basePrice;
   const hasItinerary = t.itinerary && t.itinerary.length > 0;
 
-  const getImageUrl = (img: any) => (typeof img === "string" ? img : img?.url || "");
+  const handleDelete = () => {
+    deleteMutation.mutate(tourId, {
+      onSuccess: (res) => {
+        toast.success(res?.message || "Tour service deleted successfully");
+        setTourSelected(null);
+        setIsDeleteOpen(false);
+      },
+      onError: (err: any) => {
+        toast.error(err?.response?.data?.message || "Failed to delete tour service");
+      }
+    });
+  };
 
   return (
     <Card className="overflow-hidden shadow-md">
       <div className="flex justify-between items-center px-6 pt-4">
         <h1 className="text-sm font-medium text-muted-foreground">Tour Details</h1>
+        <div className="flex gap-2">
+          {/* Note: Tour edit/updating is not currently handled via a custom form sheet, but we show a placeholder delete button as requested */}
+          <Button
+            size="sm"
+            variant="destructive"
+            onClick={() => setIsDeleteOpen(true)}
+          >
+            Delete
+          </Button>
+        </div>
       </div>
+
+      <DeleteConfirmationModal
+        isOpen={isDeleteOpen}
+        onClose={() => setIsDeleteOpen(false)}
+        onConfirm={handleDelete}
+        serviceName={t.title}
+        isLoading={deleteMutation.isPending}
+      />
 
       <CardHeader className="pb-4">
         <CardTitle className="text-2xl font-bold">{t.title}</CardTitle>

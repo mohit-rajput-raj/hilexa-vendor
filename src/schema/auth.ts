@@ -34,7 +34,7 @@ const locationSchema = z.object({
   coordinates: z.tuple([z.number(), z.number()]),
 });
 export type LoginFormProps = z.infer<typeof LoginScshema>;
-export const serviceTypeEnum = z.enum(["hotel", "restaurant", "cafe"]);
+export const serviceTypeEnum = z.enum(["hotel", "cab", "tour", "bike", "adventure"]);
 export type serviceTypeEnumProps = z.infer<typeof serviceTypeEnum>;
 const RoleEnum = z.enum(["vendor", "customer", "admin"]);
 const GenderEnum = z.enum(["male", "female", "other"]);
@@ -113,6 +113,7 @@ export const SignUpSchema = z
       .array(documentSchema)
       .min(1, "At least one document is required"),
     amenities: z.array(z.string()).min(1, "Please select at least one amenity"),
+    adventureCategory: z.string().optional(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",

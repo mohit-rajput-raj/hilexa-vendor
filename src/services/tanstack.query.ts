@@ -1,5 +1,4 @@
-"use client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   getConnectedAccount,
   getDashboard,
@@ -17,8 +16,67 @@ import {
   getTourServiceDetailsById,
   getAdventuresServices,
   getAdventureServiceDetailsById,
+  deleteCabService,
+  deleteBikeService,
+  deleteTourService,
+  deleteAdventureService,
+  deleteRoomType,
 } from "./fetch.service";
 import { useCurrentUser } from "./queryes";
+
+// Delete Service Mutations
+export const useDeleteRoomType = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteRoomType,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["vendor-getRooms"] });
+      queryClient.invalidateQueries({ queryKey: ["vendor-getRoomById"] });
+    },
+  });
+};
+
+// Delete Service Mutations
+export const useDeleteCabService = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteCabService,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["user-getCabsServices"] });
+    },
+  });
+};
+
+export const useDeleteBikeService = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteBikeService,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["user-getBikesServices"] });
+    },
+  });
+};
+
+export const useDeleteTourService = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteTourService,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["user-getToursServices"] });
+    },
+  });
+};
+
+export const useDeleteAdventureService = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteAdventureService,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["user-getAdventuresServices"] });
+      queryClient.invalidateQueries({ queryKey: ["user-getAdventureServiceDetailsById"] });
+    },
+  });
+};
 
 //cab
 export const useGetCabsServices = () => {

@@ -20,6 +20,10 @@ import {
   businessDetails,
   saveandsubmit,
   SaveHotelDetails,
+  SaveCabDetails,
+  SaveBikeDetails,
+  SaveTourDetails,
+  SaveAdventureDetails,
 } from "./services";
 import axios from "axios";
 
@@ -127,47 +131,96 @@ export const useSignUp = () => {
     }
   };
   const submitStep_3 = async (
+    serviceType: serviceTypeEnumProps,
     name: string,
     address: string,
     description: string,
     amenities: string[],
-    documents: {
-      docName: string;
-      docUrl: string;
-      public_id: string;
-      resource_type: string;
-    }[],
-    images: { url: string; public_id: string; resource_type: string }[],
+    documents: any[],
+    images: any[],
     city: string,
     location: { type: string; coordinates: [number, number] },
     onNext: React.Dispatch<React.SetStateAction<number>>,
+    extraFields?: { adventureCategory?: string }
   ) => {
     setLoading(true);
 
     try {
-      const res = await SaveHotelDetails({
-        name,
-        address,
-        description,
-        amenities,
-        documents,
-        images,
-        city,
-        location,
-      });
+      let res;
+      if (serviceType === "cab") {
+        res = await SaveCabDetails({
+          name,
+          address,
+          description,
+          features: amenities,
+          documents,
+          images,
+          location: { city, state: "", country: "India" },
+          coordinates: { lat: location.coordinates[1], lng: location.coordinates[0] },
+        });
+      } else if (serviceType === "bike") {
+        res = await SaveBikeDetails({
+          name,
+          address,
+          description,
+          features: amenities,
+          documents,
+          images,
+          location: { city, state: "", country: "India" },
+          coordinates: { lat: location.coordinates[1], lng: location.coordinates[0] },
+        });
+      } else if (serviceType === "tour") {
+        res = await SaveTourDetails({
+          name,
+          address,
+          description,
+          features: amenities,
+          documents,
+          images,
+          location: { city, state: "", country: "India" },
+          coordinates: { lat: location.coordinates[1], lng: location.coordinates[0] },
+        });
+      } else if (serviceType === "adventure") {
+        res = await SaveAdventureDetails({
+          name,
+          category: extraFields?.adventureCategory || "rafting",
+          city,
+          state: "",
+          country: "India",
+          address,
+          description,
+          images,
+          documents,
+          features: amenities,
+          coordinates: { lat: location.coordinates[1], lng: location.coordinates[0] },
+        });
+      } else {
+        // hotel
+        res = await SaveHotelDetails({
+          name,
+          address,
+          description,
+          amenities,
+          documents,
+          images,
+          city,
+          location,
+        });
+      }
+
       if (res.success) {
-        toast.success(res.message || "Hotel details added successfully");
+        toast.success(res.message || `${serviceType.toUpperCase()} details added successfully`);
         const r = await saveandsubmit();
         if (r.success) {
-          toast.success(r.message || "Hotel details added successfully");
+          toast.success(r.message || "Registration submitted successfully!");
           onNext(res.currentStep! + 2);
           setCurrStep(res.currentStep! + 2);
         }
       } else {
-        toast.error(res.message || "Failed to add hotel details");
+        toast.error(res.message || `Failed to add ${serviceType} details`);
       }
-    } catch (error) {
-      toast.error("Failed to add hotel details");
+    } catch (error: any) {
+      toast.error(error?.message || `Failed to add ${serviceType} details`);
     } finally {
       setLoading(false);
     }

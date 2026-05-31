@@ -406,7 +406,11 @@ import { useCurrentUser } from "@/services/queryes";
 /* ✅ Dynamic imports (SSR disabled) */
 const Step_1 = dynamic(() => import("../_components/step-1").then(m => m.Step_1), { ssr: false });
 const Step_2 = dynamic(() => import("../_components/step-2").then(m => m.Step_2), { ssr: false });
-const Step_3 = dynamic(() => import("../_components/step-3").then(m => m.Step_3), { ssr: false });
+const Step_3_hotel = dynamic(() => import("../_components/step-3").then(m => m.Step_3_hotel), { ssr: false });
+const Step_3_cab = dynamic(() => import("../_components/step-3").then(m => m.Step_3_cab), { ssr: false });
+const Step_3_bike = dynamic(() => import("../_components/step-3").then(m => m.Step_3_bike), { ssr: false });
+const Step_3_tour = dynamic(() => import("../_components/step-3").then(m => m.Step_3_tour), { ssr: false });
+const Step_3_adventure = dynamic(() => import("../_components/step-3").then(m => m.Step_3_adventure), { ssr: false });
 
 export default function Process() {
   const { currentStep, setCurrentStep } = useProcessContext();
@@ -483,6 +487,7 @@ const FullProcessForm = ({ methods }: { methods: any }) => {
   const { currentStep } = useProcessContext();
   const router = useRouter();
   const { data: u } = useCurrentUser();
+  const serviceType = methods.watch("serviceType");
 
   switch (currentStep) {
     case 2:
@@ -492,7 +497,19 @@ const FullProcessForm = ({ methods }: { methods: any }) => {
       return <Step_2 currentStep={currentStep} methods={methods} />;
 
     case 4:
-      return <Step_3 currentStep={currentStep} methods={methods} />;
+      switch (serviceType) {
+        case "cab":
+          return <Step_3_cab currentStep={currentStep} methods={methods} />;
+        case "bike":
+          return <Step_3_bike currentStep={currentStep} methods={methods} />;
+        case "tour":
+          return <Step_3_tour currentStep={currentStep} methods={methods} />;
+        case "adventure":
+          return <Step_3_adventure currentStep={currentStep} methods={methods} />;
+        case "hotel":
+        default:
+          return <Step_3_hotel currentStep={currentStep} methods={methods} />;
+      }
 
     case 5:
       return (

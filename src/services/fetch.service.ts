@@ -82,6 +82,27 @@ export const getAdventureServiceDetailsById = async (id: string) => {
   const res = await axiosApi.get(`/adventures/vendor/adventures/${id}`);
   return res.data;
 };
+
+// Delete services
+export const deleteCabService = async (id: string) => {
+  const res = await axiosApi.delete(`/cab-services/vendor/cab-services/${id}`);
+  return res.data;
+};
+
+export const deleteBikeService = async (id: string) => {
+  const res = await axiosApi.delete(`/bike-services/vendor/bike-services/${id}`);
+  return res.data;
+};
+
+export const deleteTourService = async (id: string) => {
+  const res = await axiosApi.delete(`/tour-services/vendor/tour-services/${id}`);
+  return res.data;
+};
+
+export const deleteAdventureService = async (id: string) => {
+  const res = await axiosApi.delete(`/services/vendor/services/${id}`);
+  return res.data;
+};
 /////////////////////////
 export const VendorAccountsConnectAccount = async (data: FormData) => {
   try {
@@ -231,4 +252,9 @@ export const getRoomById = async (id: string, hotelId: string) => {
       config: {},
     };
   }
+};
+
+export const deleteRoomType = async (id: string) => {
+  const res = await axiosApi.delete(`/room-types/${id}`);
+  return res.data;
 };

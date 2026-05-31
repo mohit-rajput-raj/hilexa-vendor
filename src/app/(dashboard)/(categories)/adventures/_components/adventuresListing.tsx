@@ -29,13 +29,17 @@ import {
   Wind,
   Zap,
   Compass,
+  Trash2,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { PageSkeleton } from "../../rooms/_components/details.skeleton";
 import {
   useGetAdventuresServices,
   useGetAdventureServiceDetailsById,
+  useDeleteAdventureService,
 } from "@/services/tanstack.query";
+import { DeleteConfirmationModal } from "@/components/delete-confirmation-modal";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import Rupee from "@/components/rupee";
 
@@ -279,6 +283,18 @@ export function AdventuresListing() {
 const AdventureSideBarDetails = ({ adventureId }: { adventureId: string }) => {
   const { data: detailsResponse, isLoading, error } =
     useGetAdventureServiceDetailsById(adventureId);
+  const [activeImage, setActiveImage] = React.useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = React.useState<{ id: string; title: string } | null>(null);
+  const deleteMutation = useDeleteAdventureService();
+
+  const getImageUrl = (img: any) => (typeof img === "string" ? img : img?.url || "");
+
+  React.useEffect(() => {
+    const adventure = detailsResponse?.data?.adventure;
+    if (adventure?.images?.length) {
+      setActiveImage(getImageUrl(adventure.images[0]));
+    }
+  }, [detailsResponse]);
 
   if (isLoading) {
     return (
@@ -295,22 +311,35 @@ const AdventureSideBarDetails = ({ adventureId }: { adventureId: string }) => {
   const d = detailsResponse.data;
   const adventure = d.adventure;
   const services = d.services || [];
-  const getImageUrl = (img: any) => (typeof img === "string" ? img : img?.url || "");
 
   const hasImages = adventure?.images && adventure.images.length > 0;
-  const [activeImage, setActiveImage] = React.useState<string | null>(null);
 
-  React.useEffect(() => {
-    if (hasImages) {
-      setActiveImage(getImageUrl(adventure.images[0]));
-    }
-  }, [adventure.images, hasImages]);
+  const handleDelete = () => {
+    if (!deleteTarget) return;
+    deleteMutation.mutate(deleteTarget.id, {
+      onSuccess: (res) => {
+        toast.success(res?.message || "Service deleted successfully");
+        setDeleteTarget(null);
+      },
+      onError: (err: any) => {
+        toast.error(err?.response?.data?.message || "Failed to delete service");
+      }
+    });
+  };
 
   return (
     <Card className="overflow-hidden shadow-md">
       <div className="flex justify-between items-center px-6 pt-4">
         <h1 className="text-sm font-medium text-muted-foreground">Adventure Details</h1>
       </div>
+
+      <DeleteConfirmationModal
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDelete}
+        serviceName={deleteTarget?.title || ""}
+        isLoading={deleteMutation.isPending}
+      />
 
       <CardHeader className="pb-4">
         <CardTitle className="text-2xl font-bold">{adventure?.name}</CardTitle>
@@ -398,8 +427,18 @@ const AdventureSideBarDetails = ({ adventureId }: { adventureId: string }) => {
               return (
                 <div key={s._id} className="border rounded-xl p-3 space-y-2 bg-muted/20">
                   <div className="flex justify-between items-start">
-                    <div>
-                      <p className="font-semibold text-sm">{s.title}</p>
+                    <div className="flex-1 mr-2">
+                      <div className="flex items-center justify-between">
+                        <p className="font-semibold text-sm">{s.title}</p>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10 shrink-0"
+                          onClick={() => setDeleteTarget({ id: s._id, title: s.title })}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                       <Badge variant="outline" className="text-[10px] capitalize mt-1">
                         {s.type}
                       </Badge>

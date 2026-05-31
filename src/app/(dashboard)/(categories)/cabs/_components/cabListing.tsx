@@ -32,8 +32,10 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { PageSkeleton } from "../../rooms/_components/details.skeleton";
-import { useGetCabsServices, useGetCabServiceDetailsById } from "@/services/tanstack.query";
+import { useGetCabsServices, useGetCabServiceDetailsById, useDeleteCabService } from "@/services/tanstack.query";
 import EditCabForm from "./edit-cab-form";
+import { DeleteConfirmationModal } from "@/components/delete-confirmation-modal";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useCurrentUser } from "@/services/queryes";
 import Rupee from "@/components/rupee";
@@ -307,6 +309,7 @@ export function CabListing() {
                             <CabSideBarDetails
                                 cabId={cabSelected}
                                 setEditMode={setEditMode}
+                                setCabSelected={setCabSelected}
                             />
                         ) : (
                             <MessageModal
@@ -361,13 +364,29 @@ export const MessageModal = ({
 const CabSideBarDetails = ({
     cabId,
     setEditMode,
+    setCabSelected,
 }: {
     cabId: string;
     setEditMode: React.Dispatch<
         React.SetStateAction<{ id: string; mode: boolean }>
     >;
+    setCabSelected: React.Dispatch<React.SetStateAction<string | null>>;
 }) => {
     const { data: cabDetailsResponse, isLoading, error } = useGetCabServiceDetailsById(cabId);
+    const [activeImage, setActiveImage] = React.useState<string | null>(null);
+    const [isDeleteOpen, setIsDeleteOpen] = React.useState(false);
+    const deleteMutation = useDeleteCabService();
+
+    const getImageUrl = (img: any) => {
+        if (typeof img === "string") return img;
+        return img?.url || "";
+    };
+
+    React.useEffect(() => {
+        if (cabDetailsResponse?.data?.images?.length) {
+            setActiveImage(getImageUrl(cabDetailsResponse.data.images[0]));
+        }
+    }, [cabDetailsResponse]);
 
     if (isLoading) {
         return (
@@ -382,22 +401,22 @@ const CabSideBarDetails = ({
     }
 
     const cab = cabDetailsResponse.data;
-
-    const getImageUrl = (img: any) => {
-        if (typeof img === "string") return img;
-        return img?.url || "";
-    };
-
     const hasImages = cab.images && cab.images.length > 0;
-    const [activeImage, setActiveImage] = React.useState<string | null>(null);
-
-    React.useEffect(() => {
-        if (hasImages) {
-            setActiveImage(getImageUrl(cab.images[0]));
-        }
-    }, [cab.images, hasImages]);
 
     const hasDiscount = !!cab.pricing?.discountPrice && cab.pricing?.discountPrice < cab.pricing?.basePrice;
+
+    const handleDelete = () => {
+        deleteMutation.mutate(cabId, {
+            onSuccess: (res) => {
+                toast.success(res?.message || "Cab service deleted successfully");
+                setCabSelected(null);
+                setIsDeleteOpen(false);
+            },
+            onError: (err: any) => {
+                toast.error(err?.response?.data?.message || "Failed to delete cab service");
+            }
+        });
+    };
 
     return (
         <Card className="overflow-hidden shadow-md">
@@ -406,14 +425,31 @@ const CabSideBarDetails = ({
                 <h1 className="text-sm font-medium text-muted-foreground">
                     Cab Details
                 </h1>
-                <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setEditMode({ id: cabId, mode: true })}
-                >
-                    Edit Cab
-                </Button>
+                <div className="flex gap-2">
+                    <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setEditMode({ id: cabId, mode: true })}
+                    >
+                        Edit Cab
+                    </Button>
+                    <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => setIsDeleteOpen(true)}
+                    >
+                        Delete
+                    </Button>
+                </div>
             </div>
+
+            <DeleteConfirmationModal
+                isOpen={isDeleteOpen}
+                onClose={() => setIsDeleteOpen(false)}
+                onConfirm={handleDelete}
+                serviceName={cab.title}
+                isLoading={deleteMutation.isPending}
+            />
 
             <CardHeader className="pb-4">
                 <CardTitle className="text-2xl font-bold">{cab.title}</CardTitle>
