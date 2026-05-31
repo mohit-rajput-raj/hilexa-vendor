@@ -104,11 +104,7 @@ export function SectionCards({ dash, isLoading }: SectionCardsProps) {
         return (
           <Card
             key={card.key}
-            className="
-              bg-gradient-to-t from-primary/5 to-card 
-              shadow-xs dark:bg-card
-              transition-all hover:shadow-md
-            "
+            className="bg-gradient-to-t from-primary/5 to-card border-none shadow-sm rounded-3xl transition-all hover:shadow-md"
           >
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">

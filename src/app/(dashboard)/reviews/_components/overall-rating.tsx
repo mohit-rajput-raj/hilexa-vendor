@@ -14,14 +14,53 @@ import {
 } from "@/components/ui/chart"
 
 const chartConfig = {
-  desktop: { label: "Desktop", color: "var(--chart-1)" },
-  mobile: { label: "Mobile", color: "var(--chart-2)" },
+  value: { label: "Rating", color: "#8B5CF6" },
 } satisfies ChartConfig
 
-export function OverallRating() {
-  // Data matching reference image: 4.6 out of 5
-  const chartData = [{ month: "january", desktop: 1260, mobile: 570 }]
-  const totalVisitors = chartData[0].desktop + chartData[0].mobile
+export function OverallRating({
+  averageRating = 0,
+  totalReviews = 0,
+  comments = [],
+}: {
+  averageRating?: number
+  totalReviews?: number
+  comments?: any[]
+}) {
+  const chartData = [{ name: "Rating", value: averageRating }]
+
+  // Calculate breakdown averages based on overall ratings
+  const breakdown = {
+    cleanliness: 0,
+    communication: 0,
+    location: 0,
+    value: 0
+  }
+
+  let countWithBreakdown = 0
+  comments.forEach((review: any) => {
+    const r = review.rating || 0
+    breakdown.cleanliness += r
+    breakdown.communication += r
+    breakdown.location += r
+    breakdown.value += r
+    countWithBreakdown++
+  })
+
+  const averages = {
+    cleanliness: countWithBreakdown ? Number((breakdown.cleanliness / countWithBreakdown).toFixed(1)) : 0,
+    communication: countWithBreakdown ? Number((breakdown.communication / countWithBreakdown).toFixed(1)) : 0,
+    location: countWithBreakdown ? Number((breakdown.location / countWithBreakdown).toFixed(1)) : 0,
+    value: countWithBreakdown ? Number((breakdown.value / countWithBreakdown).toFixed(1)) : 0,
+  }
+
+  // Determine an adjective matching the rating
+  let ratingAdjective = "Excellent"
+  if (averageRating >= 4.5) ratingAdjective = "Impressive"
+  else if (averageRating >= 4.0) ratingAdjective = "Very Good"
+  else if (averageRating >= 3.0) ratingAdjective = "Good"
+  else if (averageRating >= 2.0) ratingAdjective = "Fair"
+  else if (averageRating > 0) ratingAdjective = "Poor"
+  else ratingAdjective = "No Reviews"
 
   return (
     <Card className="max-w-full rounded-2xl shadow-sm border bg-card text-card-foreground overflow-hidden">
@@ -36,73 +75,64 @@ export function OverallRating() {
         {/* Left Side: Radial Gauge & Summary Block */}
         <div className="flex flex-col items-center gap-3">
           <ChartContainer config={chartConfig} className="aspect-square w-full max-w-[150px]">
-           <RadialBarChart
-        data={chartData}
-        endAngle={180}
-        innerRadius={55}   /* Smaller radius to fit side-by-side */
-        outerRadius={85}
-      >
-        <ChartTooltip
-          cursor={false}
-          content={<ChartTooltipContent hideLabel />}
-        />
-        <PolarRadiusAxis tick={false} tickLine={false} axisLine={false}>
-          <Label
-            content={({ viewBox }) => {
-              if (viewBox && "cx" in viewBox && "cy" in viewBox) {
-                return (
-                  <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle">
-                    <tspan
-                      x={viewBox.cx}
-                      y={(viewBox.cy || 0) - 10}
-                      className="fill-foreground text-xl font-bold"
-                    >
-                      {totalVisitors.toLocaleString()}
-                    </tspan>
-                    <tspan
-                      x={viewBox.cx}
-                      y={(viewBox.cy || 0) + 10}
-                      className="fill-muted-foreground text-[10px]"
-                    >
-                      Visitors
-                    </tspan>
-                  </text>
-                )
-              }
-            }}
-          />
-        </PolarRadiusAxis>
-        <RadialBar
-          dataKey="desktop"
-          stackId="a"
-          cornerRadius={5}
-          fill="var(--color-desktop)"
-          className="stroke-transparent stroke-2"
-        />
-        <RadialBar
-          dataKey="mobile"
-          fill="var(--color-mobile)"
-          stackId="a"
-          cornerRadius={5}
-          className="stroke-transparent stroke-2"
-        />
-      </RadialBarChart>
+            <RadialBarChart
+              data={chartData}
+              startAngle={180}
+              endAngle={0}
+              innerRadius={55}   /* Smaller radius to fit side-by-side */
+              outerRadius={85}
+              barSize={15}
+            >
+              <PolarRadiusAxis angle={90} domain={[0, 5]} tick={false} axisLine={false} />
+              <RadialBar
+                background
+                dataKey="value"
+                cornerRadius={5}
+                fill="#8B5CF6"
+                className="stroke-transparent stroke-2"
+              />
+              <PolarRadiusAxis tick={false} tickLine={false} axisLine={false}>
+                <Label
+                  content={({ viewBox }) => {
+                    if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                      return (
+                        <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle">
+                          <tspan
+                            x={viewBox.cx}
+                            y={(viewBox.cy || 0) - 10}
+                            className="fill-foreground text-xl font-bold"
+                          >
+                            {averageRating.toFixed(1)}
+                          </tspan>
+                          <tspan
+                            x={viewBox.cx}
+                            y={(viewBox.cy || 0) + 10}
+                            className="fill-muted-foreground text-[10px]"
+                          >
+                            Out of 5
+                          </tspan>
+                        </text>
+                      )
+                    }
+                  }}
+                />
+              </PolarRadiusAxis>
+            </RadialBarChart>
           </ChartContainer>
 
           {/* Purple Summary Block matching image */}
           <div className="w-full bg-violet-600 text-white p-3 rounded-xl text-center shadow-md">
-            <p className="text-lg font-bold">Impressive</p>
-            <p className="text-[10px] opacity-80 font-medium tracking-wide">from 2546 reviews</p>
+            <p className="text-lg font-bold">{ratingAdjective}</p>
+            <p className="text-[10px] opacity-80 font-medium tracking-wide">from {totalReviews} reviews</p>
           </div>
         </div>
 
         {/* Right Side: Linear Progress Bars */}
         <div className="space-y-4 pt-4">
-          <RatingRow label="Facilities" score={4.4} value={88} />
-          <RatingRow label="Cleanliness" score={4.4} value={88} />
-          <RatingRow label="Services" score={4.6} value={92} />
-          <RatingRow label="Comfort" score={4.8} value={96} />
-          <RatingRow label="Food and Dining" score={4.5} value={90} />
+          <RatingRow label="Cleanliness" score={averages.cleanliness} value={averages.cleanliness * 20} />
+          <RatingRow label="Communication" score={averages.communication} value={averages.communication * 20} />
+          <RatingRow label="Location" score={averages.location} value={averages.location * 20} />
+          <RatingRow label="Value" score={averages.value} value={averages.value * 20} />
         </div>
       </CardContent>
     </Card>

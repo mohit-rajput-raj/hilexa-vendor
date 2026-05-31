@@ -66,6 +66,7 @@ export const useSignUp = () => {
   ) => {
     setLoading(true);
     try {
+      const filteredDocs = (verificationDocs || []).filter(doc => doc.docUrl && doc.docUrl.trim() !== "");
       const res = await businessDetails({
         serviceType, //
         businessName, //
@@ -78,7 +79,7 @@ export const useSignUp = () => {
         panNumber,
         aadhaarNumber,
 
-        verificationDocs, //
+        verificationDocs: filteredDocs, //
       });
       if (res.success) {
         toast.success(res.message || "Business details added successfully");

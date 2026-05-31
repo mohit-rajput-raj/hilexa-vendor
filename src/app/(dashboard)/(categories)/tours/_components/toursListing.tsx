@@ -293,6 +293,14 @@ const TourSideBarDetails = ({ tourId }: { tourId: string }) => {
 
   const t = tourResponse.data;
   const hasImages = t.images && t.images.length > 0;
+  const [activeImage, setActiveImage] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (hasImages) {
+      setActiveImage(getImageUrl(t.images[0]));
+    }
+  }, [t.images, hasImages]);
+
   const hasDiscount =
     !!t.pricing?.discountPrice && t.pricing.discountPrice < t.pricing.basePrice;
   const hasItinerary = t.itinerary && t.itinerary.length > 0;
@@ -319,22 +327,32 @@ const TourSideBarDetails = ({ tourId }: { tourId: string }) => {
           <div className="space-y-3">
             <div className="aspect-video overflow-hidden rounded-lg border bg-muted">
               <img
-                src={getImageUrl(t.images[0])}
+                src={activeImage || getImageUrl(t.images[0])}
                 alt={t.title}
                 className="h-full w-full object-cover"
               />
             </div>
             {t.images.length > 1 && (
               <div className="flex gap-2 overflow-x-auto pb-1">
-                {t.images.slice(1).map((img: any, idx: number) => (
-                  <div key={idx} className="h-16 w-24 shrink-0 overflow-hidden rounded-md border">
-                    <img
-                      src={getImageUrl(img)}
-                      alt="Preview"
-                      className="h-full w-full object-cover hover:opacity-90 transition"
-                    />
-                  </div>
-                ))}
+                {t.images.map((img: any, idx: number) => {
+                  const imgUrl = getImageUrl(img);
+                  const isActive = activeImage === imgUrl;
+                  return (
+                    <div
+                      key={idx}
+                      className={`h-16 w-24 shrink-0 overflow-hidden rounded-md border-2 cursor-pointer transition-all ${
+                        isActive ? "border-primary scale-95" : "border-border hover:border-primary/40"
+                      }`}
+                      onClick={() => setActiveImage(imgUrl)}
+                    >
+                      <img
+                        src={imgUrl}
+                        alt="Preview"
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>

@@ -439,6 +439,13 @@ const RoomSideBarDetails = ({
   const { data: user } = useCurrentUser();
 
   const { data, isLoading, error } = useRoomById(editmode.id);
+  const [activeImage, setActiveImage] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (data?.data?.images?.length) {
+      setActiveImage(data.data.images[0]?.url);
+    }
+  }, [data]);
 
   if (isLoading) {
     return <Card className="p-6">Loading...</Card>;
@@ -451,18 +458,12 @@ const RoomSideBarDetails = ({
   const room: DetailedRoom = data.data;
 
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden shadow-md">
       {/* Header */}
       <div className="flex justify-between px-6 pt-4">
         <h1 className="text-sm font-medium text-muted-foreground">
           Room Details
         </h1>
-        {/* <Button
-          size="sm"
-          onClick={() => setEditMode({ id: editmode.id, mode: true })}
-        >
-          Edit Room
-        </Button> */}
       </div>
 
       <CardHeader className="pb-4">
@@ -481,32 +482,43 @@ const RoomSideBarDetails = ({
 
       <CardContent className="space-y-6">
         {/* Images */}
-        <div className="flex gap-3">
-          {/* Main image */}
-          <div className="flex-1 aspect-video overflow-hidden rounded-lg border">
-            <img
-              src={room.images?.[0]?.url}
-              alt={room.name}
-              className="h-full w-full object-cover"
-            />
-          </div>
-
-          {/* Thumbnails */}
-          <div className="w-28 flex flex-col gap-2">
-            {[...Array(3)].map((_, idx) => (
-              <div
-                key={idx}
-                className="aspect-video overflow-hidden rounded-lg border"
-              >
-                <img
-                  src={room.images?.[0]?.url}
-                  alt="Room preview"
-                  className="h-full w-full object-cover hover:opacity-90 transition"
-                />
+        {room.images && room.images.length > 0 ? (
+          <div className="space-y-3">
+            <div className="aspect-video overflow-hidden rounded-lg border bg-muted">
+              <img
+                src={activeImage || room.images[0]?.url}
+                alt={room.name}
+                className="h-full w-full object-cover"
+              />
+            </div>
+            {room.images.length > 1 && (
+              <div className="flex gap-2 overflow-x-auto pb-1">
+                {room.images.map((img, idx) => {
+                  const isActive = activeImage === img.url;
+                  return (
+                    <div
+                      key={img._id || idx}
+                      className={`h-16 w-24 shrink-0 overflow-hidden rounded-md border-2 cursor-pointer transition-all ${
+                        isActive ? "border-primary scale-95" : "border-border hover:border-primary/40"
+                      }`}
+                      onClick={() => setActiveImage(img.url)}
+                    >
+                      <img
+                        src={img.url}
+                        alt="Room preview"
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                  );
+                })}
               </div>
-            ))}
+            )}
           </div>
-        </div>
+        ) : (
+          <div className="aspect-video rounded-lg border bg-muted/30 flex flex-col items-center justify-center text-muted-foreground p-6">
+            <span className="text-xs">No images uploaded</span>
+          </div>
+        )}
 
         {/* Price & Capacity */}
         <div className="space-y-2 text-sm">
