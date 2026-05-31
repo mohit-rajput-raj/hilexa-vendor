@@ -383,13 +383,20 @@ const CabSideBarDetails = ({
 
     const cab = cabDetailsResponse.data;
 
-    // Helper to get image URL whether it's string or object
     const getImageUrl = (img: any) => {
         if (typeof img === "string") return img;
         return img?.url || "";
     };
 
     const hasImages = cab.images && cab.images.length > 0;
+    const [activeImage, setActiveImage] = React.useState<string | null>(null);
+
+    React.useEffect(() => {
+        if (hasImages) {
+            setActiveImage(getImageUrl(cab.images[0]));
+        }
+    }, [cab.images, hasImages]);
+
     const hasDiscount = !!cab.pricing?.discountPrice && cab.pricing?.discountPrice < cab.pricing?.basePrice;
 
     return (
@@ -422,22 +429,32 @@ const CabSideBarDetails = ({
                     <div className="space-y-3">
                         <div className="aspect-video overflow-hidden rounded-lg border bg-muted">
                             <img
-                                src={getImageUrl(cab.images[0])}
+                                src={activeImage || getImageUrl(cab.images[0])}
                                 alt={cab.title}
                                 className="h-full w-full object-cover"
                             />
                         </div>
                         {cab.images.length > 1 && (
                             <div className="flex gap-2 overflow-x-auto pb-1">
-                                {cab.images.slice(1).map((img: any, idx: number) => (
-                                    <div key={idx} className="h-16 w-24 shrink-0 overflow-hidden rounded-md border">
-                                        <img
-                                            src={getImageUrl(img)}
-                                            alt="Preview"
-                                            className="h-full w-full object-cover hover:opacity-90 transition"
-                                        />
-                                    </div>
-                                ))}
+                                {cab.images.map((img: any, idx: number) => {
+                                    const imgUrl = getImageUrl(img);
+                                    const isActive = activeImage === imgUrl;
+                                    return (
+                                        <div
+                                            key={idx}
+                                            className={`h-16 w-24 shrink-0 overflow-hidden rounded-md border-2 cursor-pointer transition-all ${
+                                                isActive ? "border-primary scale-95" : "border-border hover:border-primary/40"
+                                            }`}
+                                            onClick={() => setActiveImage(imgUrl)}
+                                        >
+                                            <img
+                                                src={imgUrl}
+                                                alt="Preview"
+                                                className="h-full w-full object-cover"
+                                            />
+                                        </div>
+                                    );
+                                })}
                             </div>
                         )}
                     </div>

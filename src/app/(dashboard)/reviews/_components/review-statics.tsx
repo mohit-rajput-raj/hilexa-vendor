@@ -3,6 +3,7 @@
 import * as React from "react"
 import { CalendarIcon, ChevronDown } from "lucide-react"
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, ReferenceLine } from "recharts"
+import { format, subDays, isSameDay } from "date-fns"
 
 import {
   Card,
@@ -18,29 +19,51 @@ import {
 } from "@/components/ui/chart"
 import { Button } from "@/components/ui/button"
 
-// Updated data to reflect the positive/negative structure in your image
-const chartData = [
-  { date: "12 Jun", positive: 28000, negative: -25000 },
-  { date: "13 Jun", positive: 22000, negative: -5000 },
-  { date: "14 Jun", positive: 16000, negative: -12000 },
-  { date: "15 Jun", positive: 21000, negative: -8000 },
-  { date: "16 Jun", positive: 24000, negative: -28000 },
-  { date: "17 Jun", positive: 19000, negative: -8000 },
-  { date: "18 Jun", positive: 23000, negative: -12000 },
-]
-
 const chartConfig = {
   positive: {
     label: "Positive",
-    color: "#D1FAE5", // Sage Green from image
+    color: "#D1FAE5", // Sage Green
   },
   negative: {
     label: "Negative",
-    color: "#8B5CF6", // Violet from image
+    color: "#8B5CF6", // Violet
   },
 } satisfies ChartConfig
 
-export function ReviewStatistics() {
+export function ReviewStatistics({ comments = [] }: { comments: any[] }) {
+  // Generate last 7 days
+  const chartData = Array.from({ length: 7 }, (_, i) => {
+    const d = subDays(new Date(), i);
+    return {
+      date: format(d, "dd MMM"),
+      rawDate: d,
+      positive: 0,
+      negative: 0,
+    };
+  }).reverse();
+
+  // Populate positive and negative review counts
+  comments.forEach((review: any) => {
+    if (!review.createdAt) return;
+    const reviewDate = new Date(review.createdAt);
+    chartData.forEach((day) => {
+      if (isSameDay(day.rawDate, reviewDate)) {
+        if (review.rating >= 4) {
+          day.positive += 1;
+        } else {
+          day.negative -= 1; // Negative for downward bars
+        }
+      }
+    });
+  });
+
+  // Calculate dynamic domain
+  const maxVal = Math.max(
+    ...chartData.map((d) => Math.max(d.positive, Math.abs(d.negative))),
+    1
+  );
+  const domainLimit = Math.ceil(maxVal * 1.2);
+
   return (
     <Card className="max-w-full rounded-2xl shadow-sm border bg-card text-card-foreground">
       <CardHeader className="flex flex-row items-center justify-between ">
@@ -88,10 +111,9 @@ export function ReviewStatistics() {
               tickLine={false}
               axisLine={false}
               className="text-[11px] font-medium text-muted-foreground"
-              // Formats 30000 -> 30K
-              tickFormatter={(value) => `${value / 1000 === 0 ? 0 : value / 1000 + "K"}`}
-              domain={[-30000, 30000]}
-              ticks={[-30000, -15000, 0, 15000, 30000]}
+              tickFormatter={(value) => `${Math.abs(value)}`}
+              domain={[-domainLimit, domainLimit]}
+              allowDecimals={false}
             />
             <ChartTooltip
               cursor={{ fill: 'hsl(var(--muted))', opacity: 0.1 }}
@@ -118,4 +140,4 @@ export function ReviewStatistics() {
       </CardContent>
     </Card>
   )
-}
+}

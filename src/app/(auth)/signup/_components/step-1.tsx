@@ -271,8 +271,10 @@ export const Step_1 = ({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="hotel">Hotel</SelectItem>
-              <SelectItem value="restaurant">Restaurant</SelectItem>
-              <SelectItem value="cafe">Cafe</SelectItem>
+              <SelectItem value="cab">Cab</SelectItem>
+              <SelectItem value="tour">Tour</SelectItem>
+              <SelectItem value="bike">Bike</SelectItem>
+              <SelectItem value="adventure">Adventure</SelectItem>
             </SelectContent>
           </Select>
           {errors.serviceType && <p className="text-xs font-medium text-destructive mt-1.5">{errors.serviceType.message}</p>}
@@ -371,7 +373,10 @@ export const Step_1 = ({
             docName="panCard"
             onUploadSuccess={(data) => {
               const docs = watch("verificationDocs") || [];
-              setValue("verificationDocs", [...docs, { docName: data.name, docUrl: data.url }], { shouldValidate: true });
+              const updatedDocs = docs.some((d: any) => d.docName === data.name)
+                ? docs.map((d: any) => d.docName === data.name ? { ...d, docUrl: data.url } : d)
+                : [...docs, { docName: data.name, docUrl: data.url }];
+              setValue("verificationDocs", updatedDocs, { shouldValidate: true });
             }}
           />
           <ImageField
@@ -379,7 +384,10 @@ export const Step_1 = ({
             docName="aadhaarFront"
             onUploadSuccess={(data) => {
               const docs = watch("verificationDocs") || [];
-              setValue("verificationDocs", [...docs, { docName: data.name, docUrl: data.url }], { shouldValidate: true });
+              const updatedDocs = docs.some((d: any) => d.docName === data.name)
+                ? docs.map((d: any) => d.docName === data.name ? { ...d, docUrl: data.url } : d)
+                : [...docs, { docName: data.name, docUrl: data.url }];
+              setValue("verificationDocs", updatedDocs, { shouldValidate: true });
             }}
           />
         </div>

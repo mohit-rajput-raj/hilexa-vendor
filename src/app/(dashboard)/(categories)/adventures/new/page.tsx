@@ -155,7 +155,7 @@ function DistanceForm({ adventureId }: { adventureId: string }) {
   };
 
   return (
-    <Form {...form}>
+    <Form {...form} >
       <form
         onSubmit={form.handleSubmit(onSubmit, (errors) => {
           console.error("Rafting validation errors:", errors);
@@ -466,11 +466,10 @@ export default function Page() {
                 key={tab.key}
                 type="button"
                 onClick={() => setActiveTab(tab.key)}
-                className={`relative flex flex-col items-center gap-2 rounded-xl border-2 p-4 transition-all duration-200 cursor-pointer ${
-                  activeTab === tab.key
+                className={`relative flex flex-col items-center gap-2 rounded-xl border-2 p-4 transition-all duration-200 cursor-pointer ${activeTab === tab.key
                     ? "border-primary bg-primary/5 shadow-md"
                     : "border-muted hover:border-primary/40 hover:bg-muted/50"
-                }`}
+                  }`}
               >
                 <div className={`p-2 rounded-lg ${activeTab === tab.key ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
                   {tab.icon}

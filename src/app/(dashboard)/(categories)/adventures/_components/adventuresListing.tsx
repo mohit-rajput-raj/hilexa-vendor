@@ -295,9 +295,16 @@ const AdventureSideBarDetails = ({ adventureId }: { adventureId: string }) => {
   const d = detailsResponse.data;
   const adventure = d.adventure;
   const services = d.services || [];
-  const hasImages = adventure?.images && adventure.images.length > 0;
-
   const getImageUrl = (img: any) => (typeof img === "string" ? img : img?.url || "");
+
+  const hasImages = adventure?.images && adventure.images.length > 0;
+  const [activeImage, setActiveImage] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (hasImages) {
+      setActiveImage(getImageUrl(adventure.images[0]));
+    }
+  }, [adventure.images, hasImages]);
 
   return (
     <Card className="overflow-hidden shadow-md">
@@ -320,15 +327,29 @@ const AdventureSideBarDetails = ({ adventureId }: { adventureId: string }) => {
         {hasImages ? (
           <div className="space-y-3">
             <div className="aspect-video overflow-hidden rounded-lg border bg-muted">
-              <img src={getImageUrl(adventure.images[0])} alt={adventure.name} className="h-full w-full object-cover" />
+              <img src={activeImage || getImageUrl(adventure.images[0])} alt={adventure.name} className="h-full w-full object-cover" />
             </div>
             {adventure.images.length > 1 && (
               <div className="flex gap-2 overflow-x-auto pb-1">
-                {adventure.images.slice(1).map((img: any, idx: number) => (
-                  <div key={idx} className="h-16 w-24 shrink-0 overflow-hidden rounded-md border">
-                    <img src={getImageUrl(img)} alt="Preview" className="h-full w-full object-cover hover:opacity-90 transition" />
-                  </div>
-                ))}
+                {adventure.images.map((img: any, idx: number) => {
+                  const imgUrl = getImageUrl(img);
+                  const isActive = activeImage === imgUrl;
+                  return (
+                    <div
+                      key={idx}
+                      className={`h-16 w-24 shrink-0 overflow-hidden rounded-md border-2 cursor-pointer transition-all ${
+                        isActive ? "border-primary scale-95" : "border-border hover:border-primary/40"
+                      }`}
+                      onClick={() => setActiveImage(imgUrl)}
+                    >
+                      <img
+                        src={imgUrl}
+                        alt="Preview"
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
