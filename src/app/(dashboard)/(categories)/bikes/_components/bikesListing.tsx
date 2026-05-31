@@ -32,8 +32,10 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { PageSkeleton } from "../../rooms/_components/details.skeleton";
-import { useGetBikesServices, useGetBikeServiceDetailsById } from "@/services/tanstack.query";
+import { useGetBikesServices, useGetBikeServiceDetailsById, useDeleteBikeService } from "@/services/tanstack.query";
 import EditBikeForm from "./edit-bike-form";
+import { DeleteConfirmationModal } from "@/components/delete-confirmation-modal";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useCurrentUser } from "@/services/queryes";
 import Rupee from "@/components/rupee";
@@ -291,6 +293,7 @@ export function BikesListing() {
                             <BikeSideBarDetails
                                 bikeId={bikeSelected}
                                 setEditMode={setEditMode}
+                                setBikeSelected={setBikeSelected}
                             />
                         ) : (
                             <MessageModal
@@ -345,13 +348,29 @@ export const MessageModal = ({
 const BikeSideBarDetails = ({
     bikeId,
     setEditMode,
+    setBikeSelected,
 }: {
     bikeId: string;
     setEditMode: React.Dispatch<
         React.SetStateAction<{ id: string; mode: boolean }>
     >;
+    setBikeSelected: React.Dispatch<React.SetStateAction<string | null>>;
 }) => {
     const { data: bikeDetailsResponse, isLoading, error } = useGetBikeServiceDetailsById(bikeId);
+    const [activeImage, setActiveImage] = React.useState<string | null>(null);
+    const [isDeleteOpen, setIsDeleteOpen] = React.useState(false);
+    const deleteMutation = useDeleteBikeService();
+
+    const getImageUrl = (img: any) => {
+        if (typeof img === "string") return img;
+        return img?.url || "";
+    };
+
+    React.useEffect(() => {
+        if (bikeDetailsResponse?.data?.images?.length) {
+            setActiveImage(getImageUrl(bikeDetailsResponse.data.images[0]));
+        }
+    }, [bikeDetailsResponse]);
 
     if (isLoading) {
         return (
@@ -366,23 +385,22 @@ const BikeSideBarDetails = ({
     }
 
     const b = bikeDetailsResponse.data;
-
-    // Helper to get image URL whether it's string or object
-    const getImageUrl = (img: any) => {
-        if (typeof img === "string") return img;
-        return img?.url || "";
-    };
-
     const hasImages = b.images && b.images.length > 0;
-    const [activeImage, setActiveImage] = React.useState<string | null>(null);
-
-    React.useEffect(() => {
-        if (hasImages) {
-            setActiveImage(getImageUrl(b.images[0]));
-        }
-    }, [b.images, hasImages]);
 
     const hasDiscount = !!b.pricing?.discountPrice && b.pricing?.discountPrice < b.pricing?.pricePerDay;
+
+    const handleDelete = () => {
+        deleteMutation.mutate(bikeId, {
+            onSuccess: (res) => {
+                toast.success(res?.message || "Bike service deleted successfully");
+                setBikeSelected(null);
+                setIsDeleteOpen(false);
+            },
+            onError: (err: any) => {
+                toast.error(err?.response?.data?.message || "Failed to delete bike service");
+            }
+        });
+    };
 
     return (
         <Card className="overflow-hidden shadow-md">
@@ -391,14 +409,31 @@ const BikeSideBarDetails = ({
                 <h1 className="text-sm font-medium text-muted-foreground">
                     Bike Details
                 </h1>
-                <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setEditMode({ id: bikeId, mode: true })}
-                >
-                    Edit Bike
-                </Button>
+                <div className="flex gap-2">
+                    <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setEditMode({ id: bikeId, mode: true })}
+                    >
+                        Edit Bike
+                    </Button>
+                    <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => setIsDeleteOpen(true)}
+                    >
+                        Delete
+                    </Button>
+                </div>
             </div>
+
+            <DeleteConfirmationModal
+                isOpen={isDeleteOpen}
+                onClose={() => setIsDeleteOpen(false)}
+                onConfirm={handleDelete}
+                serviceName={b.title}
+                isLoading={deleteMutation.isPending}
+            />
 
             <CardHeader className="pb-4">
                 <CardTitle className="text-2xl font-bold">{b.title}</CardTitle>

@@ -90,15 +90,18 @@ const ProcessButtonHandler = ({
                         true && {
                             onClick: () => {
                                 submitStep_3(
-                                    getValues("name"),//
-                                    getValues("hotelAddress"),//
-                                    getValues("description"),//
-                                    getValues("amenities"),//
-                                    getValues("documents"),
-                                    getValues("images"),//
+                                    getValues("serviceType"),
+                                    getValues("name"),
+                                    getValues("hotelAddress"),
+                                    getValues("description"),
+                                    getValues("amenities") || [],
+                                    getValues("documents") || [],
+                                    getValues("images") || [],
                                     getValues("hotelCity"),
-                                    getValues("location"),//
-                                    setCurrentStep);
+                                    getValues("location"),
+                                    setCurrentStep,
+                                    { adventureCategory: getValues("adventureCategory") }
+                                );
                             },
                         })}
                 >
