@@ -462,9 +462,8 @@ const BikeSideBarDetails = ({
                                     return (
                                         <div
                                             key={idx}
-                                            className={`h-16 w-24 shrink-0 overflow-hidden rounded-md border-2 cursor-pointer transition-all ${
-                                                isActive ? "border-primary scale-95" : "border-border hover:border-primary/40"
-                                            }`}
+                                            className={`h-16 w-24 shrink-0 overflow-hidden rounded-md border-2 cursor-pointer transition-all ${isActive ? "border-primary scale-95" : "border-border hover:border-primary/40"
+                                                }`}
                                             onClick={() => setActiveImage(imgUrl)}
                                         >
                                             <img

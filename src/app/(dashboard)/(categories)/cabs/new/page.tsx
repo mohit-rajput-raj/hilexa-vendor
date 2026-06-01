@@ -25,8 +25,9 @@ import { CitySearchInput } from "@/components/city-search-input";
 import { NewCabProps, NewCabSchema } from "./zod-schema";
 import { addCabService } from "@/services/fetch.service";
 import { useCurrentUser } from "@/services/queryes";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-const cabTypes = ["luxury", "standard", "premium", "economy", "suv"];
+const cabTypes = ["hatchback", "sedan", "suv", "luxury"];
 export default function Page() {
   return (
     <AddCabForm />
@@ -163,7 +164,36 @@ const AddCabForm = ({
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                     <FormField control={form.control} name="title" render={({ field }) => (<FormItem><FormLabel>Title *</FormLabel><FormControl><Input {...field} placeholder="Rishikesh to Dehradun Airport Ride" /></FormControl><FormMessage /></FormItem>)} />
                     <FormField control={form.control} name="carName" render={({ field }) => (<FormItem><FormLabel>Car Name *</FormLabel><FormControl><Input {...field} placeholder="Toyota Innova Crysta" /></FormControl><FormMessage /></FormItem>)} />
-                    <FormField control={form.control} name="cabType" render={({ field }) => (<FormItem><FormLabel>Cab Type *</FormLabel><FormControl><select {...field} className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">{cabTypes.map((t) => <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>)}</select></FormControl><FormMessage /></FormItem>)} />
+                    <FormField
+                      control={form.control}
+                      name="cabType"
+                      render={({ field }) => (
+                        <FormItem className="w-full">
+                          <FormLabel>Cab Type *</FormLabel>
+
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Select cab type" />
+                              </SelectTrigger>
+                            </FormControl>
+
+                            <SelectContent>
+                              {cabTypes.map((t) => (
+                                <SelectItem key={t} value={t}>
+                                  {t.charAt(0).toUpperCase() + t.slice(1)}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                     <FormField control={form.control} name="capacity" render={({ field }) => (<FormItem><FormLabel>Seating Capacity *</FormLabel><FormControl><Input type="number" {...field} onChange={(e) => field.onChange(Number(e.target.value))} /></FormControl><FormMessage /></FormItem>)} />
                     <FormField control={form.control} name="carNumber" render={({ field }) => (<FormItem><FormLabel>Car Number *</FormLabel><FormControl><Input {...field} placeholder="UK07 IN 9999" /></FormControl><FormMessage /></FormItem>)} />
                     <FormField control={form.control} name="basePrice" render={({ field }) => (<FormItem><FormLabel>Base Price (₹) *</FormLabel><FormControl><Input type="number" {...field} onChange={(e) => field.onChange(Number(e.target.value))} /></FormControl><FormMessage /></FormItem>)} />

@@ -107,7 +107,7 @@ const AddTourForm = ({
       await addTourService(data);
       toast.success("Tour created successfully!");
       form.reset(); setPreviews([]);
-    } catch (err) { console.error(err); toast.error("Failed to create tour"); }
+    } catch (err: any) { console.error(err); toast.error("Failed to create tour"); }
     finally { setLoading(false); }
   };
 
@@ -115,7 +115,6 @@ const AddTourForm = ({
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit, (errors) => {
-          console.error("Validation errors:", errors);
           const errorMsg = Object.entries(errors)
             .map(([key, err]) => {
               if (err && typeof err === 'object' && 'message' in err) {

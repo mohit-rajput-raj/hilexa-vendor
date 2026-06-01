@@ -37,6 +37,7 @@ import { addRooms } from "@/services/fetch.service";
 import { Verify } from "@/app/(auth)/authMiddleware";
 import { useCurrentUser } from "@/services/queryes";
 import { PageSkeleton } from "../_components/details.skeleton";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 export const amenityKeys = Object.keys(amenityIconMap) as (keyof typeof amenityIconMap)[];
 const AddRoomForm = ({
   setEditMode,
@@ -319,8 +320,39 @@ const AddRoomForm = ({
                         </FormItem>
                       )}
                     />
-
                     <FormField
+                      control={form.control}
+                      name="viewType"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>View Type</FormLabel>
+
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select view type" />
+                              </SelectTrigger>
+                            </FormControl>
+
+                            <SelectContent>
+                              <SelectItem value="city">City</SelectItem>
+                              <SelectItem value="sea">Sea</SelectItem>
+                              <SelectItem value="garden">Garden</SelectItem>
+                              <SelectItem value="mountain">Mountain</SelectItem>
+                              <SelectItem value="lake">Lake</SelectItem>
+                              <SelectItem value="none">None</SelectItem>
+                            </SelectContent>
+                          </Select>
+
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* <FormField
                       control={form.control}
                       name="viewType"
                       render={({ field }) => (
@@ -332,7 +364,7 @@ const AddRoomForm = ({
                           <FormMessage />
                         </FormItem>
                       )}
-                    />
+                    /> */}
 
                     <FormField
                       control={form.control}
@@ -442,6 +474,94 @@ const AddRoomForm = ({
                   {/* Beds */}
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
+                      <Label className="text-base font-semibold">
+                        Bed Configurations
+                      </Label>
+
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          appendBed({ type: "double", quantity: 1 })
+                        }
+                      >
+                        Add Bed Type
+                      </Button>
+                    </div>
+
+                    {bedFields.map((field, index) => (
+                      <div
+                        key={field.id}
+                        className="flex gap-4 items-end border-b pb-4"
+                      >
+                        <FormField
+                          control={form.control}
+                          name={`beds.${index}.type`}
+                          render={({ field }) => (
+                            <FormItem className="flex-1 w-full">
+                              <FormLabel>Bed Type</FormLabel>
+
+                              <Select
+                                onValueChange={field.onChange}
+                                defaultValue={field.value}
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select bed type" />
+                                  </SelectTrigger>
+                                </FormControl>
+
+                                <SelectContent >
+                                  <SelectItem value="single">Single</SelectItem>
+                                  <SelectItem value="double">Double</SelectItem>
+                                  <SelectItem value="king">King</SelectItem>
+                                  <SelectItem value="queen">Queen</SelectItem>
+                                  <SelectItem value="sofa">Sofa</SelectItem>
+                                </SelectContent>
+                              </Select>
+
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name={`beds.${index}.quantity`}
+                          render={({ field }) => (
+                            <FormItem className="w-32">
+                              <FormLabel>Quantity</FormLabel>
+
+                              <FormControl>
+                                <Input
+                                  type="number"
+                                  {...field}
+                                  onChange={(e) =>
+                                    field.onChange(Number(e.target.value))
+                                  }
+                                />
+                              </FormControl>
+
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="mb-2"
+                          onClick={() => removeBed(index)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                  {/* <div className="space-y-4">
+                    <div className="flex items-center justify-between">
                       <Label className="text-base font-semibold">Bed Configurations</Label>
                       <Button
                         type="button"
@@ -496,7 +616,7 @@ const AddRoomForm = ({
                         </Button>
                       </div>
                     ))}
-                  </div>
+                  </div> */}
                 </AccordionContent>
               </AccordionItem>
 

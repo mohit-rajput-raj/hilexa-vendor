@@ -100,7 +100,7 @@ const ImageField = ({
             <img src={preview} alt="Preview" className="w-16 h-16 object-cover rounded-lg border border-white/10 mb-2" />
             {isUploaded && (
               <div className="flex items-center gap-1 text-green-500 text-[10px] font-bold uppercase">
-                <CheckCircle2 className="w-3 h-3" /> Verified
+                <CheckCircle2 className="w-3 h-3" /> Uploaded
               </div>
             )}
           </div>

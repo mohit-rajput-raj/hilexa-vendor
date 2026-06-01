@@ -34,9 +34,10 @@ import { NewBikeProps, NewBikeSchema } from "./zod-schema";
 import { addbikeService } from "@/services/fetch.service";
 import { PageSkeleton } from "../../rooms/_components/details.skeleton";
 import { useCurrentUser } from "@/services/queryes";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-const bikeTypes = ["sports", "cruiser", "standard", "scooter", "adventure", "touring"];
-const fuelTypes = ["petrol", "diesel", "electric"];
+const bikeTypes = ["scooter", "cruiser", "sports", "standard"];
+const fuelTypes = ["petrol", "electric"];
 const gearTypes = ["Manual", "Automatic"];
 
 const AddBikeForm = ({ setEditMode, }: {
@@ -164,7 +165,6 @@ const AddBikeForm = ({ setEditMode, }: {
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit, (errors) => {
-          console.error("Validation errors:", errors);
           const errorMsg = Object.entries(errors)
             .map(([key, err]) => {
               if (err && typeof err === 'object' && 'message' in err) {
@@ -292,20 +292,28 @@ const AddBikeForm = ({ setEditMode, }: {
                       control={form.control}
                       name="bikeType"
                       render={({ field }) => (
-                        <FormItem>
+                        <FormItem className="w-full">
                           <FormLabel>Bike Type *</FormLabel>
-                          <FormControl>
-                            <select
-                              {...field}
-                              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                            >
+
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Select bike type" />
+                              </SelectTrigger>
+                            </FormControl>
+
+                            <SelectContent>
                               {bikeTypes.map((type) => (
-                                <option key={type} value={type}>
+                                <SelectItem key={type} value={type}>
                                   {type.charAt(0).toUpperCase() + type.slice(1)}
-                                </option>
+                                </SelectItem>
                               ))}
-                            </select>
-                          </FormControl>
+                            </SelectContent>
+                          </Select>
+
                           <FormMessage />
                         </FormItem>
                       )}
@@ -413,20 +421,28 @@ const AddBikeForm = ({ setEditMode, }: {
                       control={form.control}
                       name="fuelType"
                       render={({ field }) => (
-                        <FormItem>
+                        <FormItem className="w-full">
                           <FormLabel>Fuel Type *</FormLabel>
-                          <FormControl>
-                            <select
-                              {...field}
-                              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                            >
+
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Select fuel type" />
+                              </SelectTrigger>
+                            </FormControl>
+
+                            <SelectContent>
                               {fuelTypes.map((type) => (
-                                <option key={type} value={type}>
+                                <SelectItem key={type} value={type}>
                                   {type.charAt(0).toUpperCase() + type.slice(1)}
-                                </option>
+                                </SelectItem>
                               ))}
-                            </select>
-                          </FormControl>
+                            </SelectContent>
+                          </Select>
+
                           <FormMessage />
                         </FormItem>
                       )}
@@ -450,20 +466,28 @@ const AddBikeForm = ({ setEditMode, }: {
                       control={form.control}
                       name="meta.gearType"
                       render={({ field }) => (
-                        <FormItem>
+                        <FormItem className="w-full">
                           <FormLabel>Gear Type *</FormLabel>
-                          <FormControl>
-                            <select
-                              {...field}
-                              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                            >
+
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Select gear type" />
+                              </SelectTrigger>
+                            </FormControl>
+
+                            <SelectContent>
                               {gearTypes.map((type) => (
-                                <option key={type} value={type}>
-                                  {type}
-                                </option>
+                                <SelectItem key={type} value={type}>
+                                  {type.charAt(0).toUpperCase() + type.slice(1)}
+                                </SelectItem>
                               ))}
-                            </select>
-                          </FormControl>
+                            </SelectContent>
+                          </Select>
+
                           <FormMessage />
                         </FormItem>
                       )}

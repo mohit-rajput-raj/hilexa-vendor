@@ -207,116 +207,123 @@ export function RoomListing() {
       <div className="grid gap-6 lg:grid-cols-[1fr_180px] xl:grid-cols-[1fr_540px]">
         {/* Room Cards - now smaller */}
         <div className="space-y-5">
-          {filteredAndSortedRooms.map((room) => (
-            <Card
-              key={room.id}
-              onClick={() => {
-                handleScroll();
-                setRoomSelected(room.id);
-                setEditMode({ id: room.id, mode: false });
-              }}
-              className="group overflow-hidden border-muted/60 bg-background hover:shadow-md transition-all duration-300 cursor-pointer md:px-3"
-            >
-              <div className="flex flex-col md:flex-row md:h-52">
-                {/* Image Section */}
-                <div className="relative w-full md:w-64 lg:w-72 shrink-0 overflow-hidden  rounded-2xl">
-                  <img
-                    src={room.image}
-                    alt={room.name}
-                    className="h-48 w-full object-cover md:h-full transition-transform duration-500 group-hover:scale-105 "
-                  />
 
-                  {/* Status Badge with Glass effect */}
-                  <Badge
-                    variant={
-                      room.status === "Available" ? "default" : "destructive"
-                    }
-                    className="absolute left-3 top-3 backdrop-blur-md bg-opacity-90 shadow-sm border-none"
-                  >
-                    <span className="relative flex h-2 w-2 mr-2">
-                      <span
-                        className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${room.status === "Available" ? "bg-green-400" : "bg-red-400"}`}
-                      ></span>
-                      <span
-                        className={`relative inline-flex rounded-full h-2 w-2 ${room.status === "Available" ? "bg-green-500" : "bg-red-500"}`}
-                      ></span>
-                    </span>
-                    {room.status}
-                  </Badge>
-                </div>
+          {filteredAndSortedRooms.length === 0 ? (
+            <div className="text-center py-12 text-muted-foreground border-2 border-dashed rounded-xl">
+              No rooms listed yet. Add a new room service.
+            </div>
+          ) : (
+            filteredAndSortedRooms.map((room) => (
+              <Card
+                key={room.id}
+                onClick={() => {
+                  handleScroll();
+                  setRoomSelected(room.id);
+                  setEditMode({ id: room.id, mode: false });
+                }}
+                className="group overflow-hidden border-muted/60 bg-background hover:shadow-md transition-all duration-300 cursor-pointer md:px-3"
+              >
+                <div className="flex flex-col md:flex-row md:h-52">
+                  {/* Image Section */}
+                  <div className="relative w-full md:w-64 lg:w-72 shrink-0 overflow-hidden  rounded-2xl">
+                    <img
+                      src={room.image}
+                      alt={room.name}
+                      className="h-48 w-full object-cover md:h-full transition-transform duration-500 group-hover:scale-105 "
+                    />
 
-                {/* Content Section */}
-                <div className="flex flex-1 flex-col p-5">
-                  <div className="flex justify-between items-start gap-2">
-                    <div className="space-y-1">
-                      <CardTitle className="text-xl font-bold tracking-tight  transition-colors">
-                        {room.name}
-                      </CardTitle>
+                    {/* Status Badge with Glass effect */}
+                    <Badge
+                      variant={
+                        room.status === "Available" ? "default" : "destructive"
+                      }
+                      className="absolute left-3 top-3 backdrop-blur-md bg-opacity-90 shadow-sm border-none"
+                    >
+                      <span className="relative flex h-2 w-2 mr-2">
+                        <span
+                          className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${room.status === "Available" ? "bg-green-400" : "bg-red-400"}`}
+                        ></span>
+                        <span
+                          className={`relative inline-flex rounded-full h-2 w-2 ${room.status === "Available" ? "bg-green-500" : "bg-red-500"}`}
+                        ></span>
+                      </span>
+                      {room.status}
+                    </Badge>
+                  </div>
 
-                      {/* Icons/Amenities row */}
-                      <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-                        <div className="flex items-center gap-1.5">
-                          <Maximize2 className="h-4 w-4 text-primary/70" />
-                          <span>{room.roomSizeSqm} m²</span>
+                  {/* Content Section */}
+                  <div className="flex flex-1 flex-col p-5">
+                    <div className="flex justify-between items-start gap-2">
+                      <div className="space-y-1">
+                        <CardTitle className="text-xl font-bold tracking-tight  transition-colors">
+                          {room.name}
+                        </CardTitle>
+
+                        {/* Icons/Amenities row */}
+                        <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                          <div className="flex items-center gap-1.5">
+                            <Maximize2 className="h-4 w-4 text-primary/70" />
+                            <span>{room.roomSizeSqm} m²</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <BedDouble className="h-4 w-4 text-primary/70" />
+                            <span>{room.beds[0].quantity} Bed</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <Users className="h-4 w-4 text-primary/70" />
+                            <span>
+                              {room.capacity?.adults + room.capacity?.children}{" "}
+                              Max
+                            </span>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-1.5">
-                          <BedDouble className="h-4 w-4 text-primary/70" />
-                          <span>{room.beds[0].quantity} Bed</span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <Users className="h-4 w-4 text-primary/70" />
-                          <span>
-                            {room.capacity?.adults + room.capacity?.children}{" "}
-                            Max
-                          </span>
-                        </div>
+                      </div>
+
+                      {/* Pricing */}
+                      <div className="text-right">
+                        <p className="text-2xl font-black text-primary">
+                          <Rupee />{room.price}
+                        </p>
+                        <p className="text-[10px] uppercase tracking-tighter text-muted-foreground font-bold">
+                          Per Night
+                        </p>
                       </div>
                     </div>
 
-                    {/* Pricing */}
-                    <div className="text-right">
-                      <p className="text-2xl font-black text-primary">
-                        <Rupee />{room.price}
-                      </p>
-                      <p className="text-[10px] uppercase tracking-tighter text-muted-foreground font-bold">
-                        Per Night
-                      </p>
-                    </div>
-                  </div>
+                    {/* Description */}
+                    <p className="mt-3 text-sm text-muted-foreground line-clamp-2 leading-relaxed italic">
+                      Luxury suite with premium amenities and scenic views.
+                    </p>
 
-                  {/* Description */}
-                  <p className="mt-3 text-sm text-muted-foreground line-clamp-2 leading-relaxed italic">
-                    Luxury suite with premium amenities and scenic views.
-                  </p>
-
-                  {/* Footer / Meta */}
-                  <div className="mt-auto pt-4 flex items-center justify-between border-t border-dashed">
-                    <div className="flex flex-col">
-                      <span className="text-[10px] uppercase font-bold text-muted-foreground">
-                        Availability
-                      </span>
-                      <span className="text-sm font-semibold text-foreground">
-                        {room.availableRooms} / {room.totalRooms}{" "}
-                        <span className="font-normal text-muted-foreground">
-                          Units left
+                    {/* Footer / Meta */}
+                    <div className="mt-auto pt-4 flex items-center justify-between border-t border-dashed">
+                      <div className="flex flex-col">
+                        <span className="text-[10px] uppercase font-bold text-muted-foreground">
+                          Availability
                         </span>
-                      </span>
-                    </div>
+                        <span className="text-sm font-semibold text-foreground">
+                          {room.availableRooms} / {room.totalRooms}{" "}
+                          <span className="font-normal text-muted-foreground">
+                            Units left
+                          </span>
+                        </span>
+                      </div>
 
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      className="rounded-full group-hover:bg-primary group-hover:text-primary-foreground transition-all"
-                    >
-                      Details
-                      <ChevronRight className="ml-1 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                    </Button>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        className="rounded-full group-hover:bg-primary group-hover:text-primary-foreground transition-all"
+                      >
+                        Details
+                        <ChevronRight className="ml-1 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </Card>
+              </Card>
 
-          ))}
+            )))
+          }
         </div>
 
         <section ref={targetSectionRef}>
@@ -498,9 +505,8 @@ const RoomSideBarDetails = ({
                   return (
                     <div
                       key={img._id || idx}
-                      className={`h-16 w-24 shrink-0 overflow-hidden rounded-md border-2 cursor-pointer transition-all ${
-                        isActive ? "border-primary scale-95" : "border-border hover:border-primary/40"
-                      }`}
+                      className={`h-16 w-24 shrink-0 overflow-hidden rounded-md border-2 cursor-pointer transition-all ${isActive ? "border-primary scale-95" : "border-border hover:border-primary/40"
+                        }`}
                       onClick={() => setActiveImage(img.url)}
                     >
                       <img
